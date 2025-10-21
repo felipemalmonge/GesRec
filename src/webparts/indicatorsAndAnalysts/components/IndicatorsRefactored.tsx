@@ -1,0 +1,135 @@
+import * as React from 'react';
+import styles from './IndicatorsRefactored.module.scss';
+import { IndicatorsErrorBoundary } from './ErrorBoundary/IndicatorsErrorBoundary';
+import { IndicatorsLoadingSpinner } from './LoadingSpinner/IndicatorsLoadingSpinner';
+import { StatCard } from './StatCard/StatCard';
+import { useIndicatorsData } from '../hooks/useIndicatorsData';
+import { IndicatorsService } from '../services/IndicatorsService';
+import { 
+  ComponentState,
+  ValidationResult,
+  IndicatorData
+} from '../types';
+import type { IIndicatorsAndAnalystsProps } from './IIndicatorsAndAnalystsProps';
+
+/**
+ * Refactored Indicators component with improved architecture patterns
+ * Implements best practices: custom hooks, service layer, error boundaries, loading states
+ */
+const IndicatorsRefactored: React.FC<IIndicatorsAndAnalystsProps> = (props) => {
+  const [componentState, setComponentState] = React.useState<ComponentState>({
+    isLoading: false,
+    error: null
+  });
+
+  // Use custom hook for indicators data
+  const indicatorsData = useIndicatorsData({
+    listId: props.listId,
+    spfxContext: props.spfxContext
+  });
+
+  // Calculate statistics using the service
+  const statistics = React.useMemo(() => {
+    if (indicatorsData.indicators.length === 0) {
+      return {
+        total: 0,
+        average: 0,
+        highest: null,
+        lowest: null
+      };
+    }
+
+    return IndicatorsService.prototype.calculateStatistics(indicatorsData.indicators);
+  }, [indicatorsData.indicators]);
+
+  // Initial validation of web part properties
+  React.useEffect(() => {
+    const validateProps = (): ValidationResult => {
+      // List ID is optional, so no validation needed
+      // Add other validations as needed
+      return { isValid: true, message: '' };
+    };
+
+    const validation = validateProps();
+    if (!validation.isValid) {
+      setComponentState({ isLoading: false, error: validation.message });
+    } else {
+      setComponentState({ isLoading: false, error: null });
+    }
+  }, [props.listId]);
+
+  // Show loading state
+  if (indicatorsData.loading || componentState.isLoading) {
+    return (
+      <IndicatorsLoadingSpinner 
+        message={indicatorsData.loading ? "Fetching indicators data..." : "Initializing indicators..."}
+        size="large"
+      />
+    );
+  }
+
+  // Show error state
+  if (componentState.error || indicatorsData.error) {
+    return (
+      <div className={styles.indicatorsContainer}>
+        <div className={styles.errorContainer}>
+          <h3>Configuration Error</h3>
+          <p>{componentState.error || indicatorsData.error}</p>
+          <p>Please check the web part properties and ensure all fields are configured correctly.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <IndicatorsErrorBoundary>
+      <div className={styles.indicatorsContainer}>
+        <div className={styles.indicatorsHeader}>
+          <h2 className={styles.indicatorsTitle}>Indicators</h2>
+          {statistics.total > 0 && (
+            <div className={styles.indicatorsSummary}>
+              <span className={styles.summaryText}>
+                Total: {statistics.total} | Average: {statistics.average}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className={styles.indicatorsGrid}>
+          {indicatorsData.indicators.map((indicator: IndicatorData) => (
+            <StatCard
+              key={indicator.id}
+              indicator={indicator}
+              showIcon={true}
+              showDescription={true}
+              className={styles.statCard}
+            />
+          ))}
+        </div>
+
+        {/* Statistics Section (Optional) */}
+        {statistics.highest && statistics.lowest && (
+          <div className={styles.statisticsSection}>
+            <h3 className={styles.statisticsTitle}>Statistics Summary</h3>
+            <div className={styles.statisticsGrid}>
+              <div className={styles.statisticItem}>
+                <span className={styles.statisticLabel}>Highest:</span>
+                <span className={styles.statisticValue}>
+                  {statistics.highest.title} ({statistics.highest.value})
+                </span>
+              </div>
+              <div className={styles.statisticItem}>
+                <span className={styles.statisticLabel}>Lowest:</span>
+                <span className={styles.statisticValue}>
+                  {statistics.lowest.title} ({statistics.lowest.value})
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </IndicatorsErrorBoundary>
+  );
+};
+
+export default IndicatorsRefactored;

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "ges-rec-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/gesRec/GesRecWebPart.js",
+          "manifest": "./src/webparts/gesRec/GesRecWebPart.manifest.json"
+        }
+      ]
+    },
+    "complaints-calendar-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/complaintsCalendar/ComplaintsCalendarWebPart.js",
+          "manifest": "./src/webparts/complaintsCalendar/ComplaintsCalendarWebPart.manifest.json"
+        }
+      ]
+    },
+    "indicators-and-analysts-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/indicatorsAndAnalysts/IndicatorsAndAnalystsWebPart.js",
+          "manifest": "./src/webparts/indicatorsAndAnalysts/IndicatorsAndAnalystsWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "GesRecWebPartStrings": "lib/webparts/gesRec/loc/{locale}.js",
+    "ComplaintsCalendarWebPartStrings": "lib/webparts/complaintsCalendar/loc/{locale}.js",
+    "IndicatorsAndAnalystsWebPartStrings": "lib/webparts/indicatorsAndAnalysts/loc/{locale}.js"
+  }
+}

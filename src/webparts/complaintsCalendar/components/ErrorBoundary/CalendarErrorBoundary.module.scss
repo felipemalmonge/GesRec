@@ -1,0 +1,161 @@
+@import '~@fluentui/react/dist/sass/References.scss';
+
+.calendarErrorBoundary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 20px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  margin: 20px 0;
+}
+
+.errorContent {
+  text-align: center;
+  max-width: 500px;
+}
+
+.errorIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+
+.errorTitle {
+  color: #dc3545;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+.errorMessage {
+  color: #6c757d;
+  font-size: 16px;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.errorActions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.retryButton {
+  background: #0078d4;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background: #106ebe;
+  }
+
+  &:active {
+    background: #005a9e;
+  }
+}
+
+.configButton {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background: #5a6268;
+  }
+
+  &:active {
+    background: #495057;
+  }
+}
+
+.errorDetails {
+  margin-top: 24px;
+  text-align: left;
+  
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+  }
+}
+
+.errorStack {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  padding: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #dc3545;
+  white-space: pre-wrap;
+  overflow-x: auto;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .calendarErrorBoundary {
+    min-height: 250px;
+    padding: 16px;
+  }
+
+  .errorIcon {
+    font-size: 36px;
+  }
+
+  .errorTitle {
+    font-size: 20px;
+  }
+
+  .errorMessage {
+    font-size: 14px;
+  }
+
+  .errorActions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .retryButton,
+  .configButton {
+    width: 100%;
+    max-width: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendarErrorBoundary {
+    min-height: 200px;
+    padding: 12px;
+  }
+
+  .errorIcon {
+    font-size: 32px;
+  }
+
+  .errorTitle {
+    font-size: 18px;
+  }
+
+  .errorMessage {
+    font-size: 13px;
+  }
+}

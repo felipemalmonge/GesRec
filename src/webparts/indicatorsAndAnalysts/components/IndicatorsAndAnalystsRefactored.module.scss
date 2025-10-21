@@ -1,0 +1,489 @@
+.indicatorsAndAnalysts {
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin: 16px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 3fr 1fr; /* 3fr left, 1fr right */
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.left {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 0; /* Allow shrinking */
+  box-sizing: border-box;
+}
+
+.right {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 0; /* Allow shrinking */
+  box-sizing: border-box;
+}
+
+.analystsSection {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.analystsTitle {
+  margin: 0 0 20px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #323130;
+  line-height: 1.2;
+}
+
+.analystsContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.analystCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.analystAvatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 3px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.analystInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.analystName {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #323130;
+  line-height: 1.2;
+}
+
+.analystRole {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  color: #605e5c;
+  line-height: 1.3;
+}
+
+.analystStatus {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  
+  &:contains("Available") {
+    background: #d4edda;
+    color: #155724;
+  }
+  
+  &:contains("Busy") {
+    background: #f8d7da;
+    color: #721c24;
+  }
+}
+
+.errorContainer {
+  padding: 20px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  color: #856404;
+  text-align: center;
+
+  h3 {
+    margin: 0 0 12px 0;
+    color: #856404;
+    font-size: 18px;
+  }
+
+  p {
+    margin: 0 0 8px 0;
+    line-height: 1.5;
+    font-size: 14px;
+  }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN - MOBILE FIRST APPROACH
+   ======================================== */
+
+/* Large Desktop (1200px and up) */
+@media (min-width: 1200px) {
+  .indicatorsAndAnalysts {
+    padding: 30px;
+    margin: 20px;
+  }
+
+  .grid {
+    gap: 24px;
+  }
+
+  .right {
+    padding: 24px;
+  }
+
+  .analystsTitle {
+    font-size: 26px;
+    margin-bottom: 24px;
+  }
+
+  .analystsContent {
+    gap: 18px;
+  }
+
+  .analystCard {
+    padding: 18px;
+  }
+
+  .analystAvatar {
+    width: 64px;
+    height: 64px;
+  }
+
+  .analystName {
+    font-size: 17px;
+  }
+
+  .analystRole {
+    font-size: 15px;
+  }
+}
+
+/* Desktop (992px to 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .indicatorsAndAnalysts {
+    padding: 25px;
+  }
+
+  .grid {
+    gap: 20px;
+  }
+
+  .right {
+    padding: 20px;
+  }
+}
+
+/* Tablet Landscape (768px to 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  .indicatorsAndAnalysts {
+    padding: 20px;
+  }
+
+  .grid {
+    grid-template-columns: 2fr 1fr;
+    gap: 18px;
+  }
+
+  .right {
+    padding: 18px;
+  }
+
+  .analystsTitle {
+    font-size: 22px;
+    margin-bottom: 18px;
+  }
+
+  .analystsContent {
+    gap: 14px;
+  }
+
+  .analystCard {
+    padding: 14px;
+  }
+
+  .analystAvatar {
+    width: 56px;
+    height: 56px;
+  }
+
+  .analystName {
+    font-size: 15px;
+  }
+
+  .analystRole {
+    font-size: 13px;
+  }
+}
+
+/* Tablet Portrait (576px to 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+  .indicatorsAndAnalysts {
+    padding: 16px;
+    margin: 12px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    gap: 16px;
+  }
+
+  .left {
+    order: 1;
+  }
+
+  .right {
+    order: 2;
+    padding: 16px;
+  }
+
+  .analystsTitle {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+
+  .analystsContent {
+    gap: 12px;
+  }
+
+  .analystCard {
+    padding: 12px;
+  }
+
+  .analystAvatar {
+    width: 52px;
+    height: 52px;
+  }
+
+  .analystName {
+    font-size: 14px;
+  }
+
+  .analystRole {
+    font-size: 12px;
+  }
+
+  .analystStatus {
+    font-size: 11px;
+  }
+}
+
+/* Mobile Landscape (480px to 575px) */
+@media (min-width: 480px) and (max-width: 575px) {
+  .indicatorsAndAnalysts {
+    padding: 14px;
+    margin: 10px;
+  }
+
+  .grid {
+    gap: 14px;
+  }
+
+  .right {
+    padding: 14px;
+  }
+
+  .analystsTitle {
+    font-size: 18px;
+    margin-bottom: 14px;
+  }
+
+  .analystsContent {
+    gap: 10px;
+  }
+
+  .analystCard {
+    padding: 10px;
+  }
+
+  .analystAvatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .analystName {
+    font-size: 13px;
+  }
+
+  .analystRole {
+    font-size: 11px;
+  }
+
+  .analystStatus {
+    font-size: 10px;
+  }
+}
+
+/* Mobile Portrait (up to 479px) */
+@media (max-width: 479px) {
+  .indicatorsAndAnalysts {
+    padding: 12px;
+    margin: 8px;
+  }
+
+  .grid {
+    gap: 12px;
+  }
+
+  .right {
+    padding: 12px;
+  }
+
+  .analystsTitle {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .analystsContent {
+    gap: 8px;
+  }
+
+  .analystCard {
+    padding: 8px;
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .analystAvatar {
+    width: 44px;
+    height: 44px;
+  }
+
+  .analystName {
+    font-size: 12px;
+  }
+
+  .analystRole {
+    font-size: 10px;
+  }
+
+  .analystStatus {
+    font-size: 9px;
+  }
+}
+
+/* Extra Small Mobile (up to 320px) */
+@media (max-width: 320px) {
+  .indicatorsAndAnalysts {
+    padding: 10px;
+    margin: 6px;
+  }
+
+  .grid {
+    gap: 10px;
+  }
+
+  .right {
+    padding: 10px;
+  }
+
+  .analystsTitle {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .analystsContent {
+    gap: 6px;
+  }
+
+  .analystCard {
+    padding: 6px;
+  }
+
+  .analystAvatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .analystName {
+    font-size: 11px;
+  }
+
+  .analystRole {
+    font-size: 9px;
+  }
+
+  .analystStatus {
+    font-size: 8px;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .analystCard {
+    &:hover {
+      background: #f8f9fa;
+      transform: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+/* High DPI Display Optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .indicatorsAndAnalysts {
+    /* Optimize for high DPI displays */
+  }
+}
+
+/* Print Styles */
+@media print {
+  .indicatorsAndAnalysts {
+    background: white !important;
+    color: black !important;
+    padding: 20px !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px !important;
+  }
+
+  .left, .right {
+    background: white !important;
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+  }
+
+  .analystCard {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

@@ -1,0 +1,249 @@
+@import '~@fluentui/react/dist/sass/References.scss';
+
+/* Base palette matching the image */
+:root {
+  --bg-deep: #003146;
+  --bg-light: #f5f6f8;
+  --text-on-deep: #ffffff;
+  --text-on-light: #1f2430;
+  --button-bg: #4a90e2;
+  --button-hover: #357abd;
+}
+
+.wrapper {
+  background: var(--bg-light);
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Header Section - Dark Teal Background */
+.header {
+  background: var(--bg-deep) url('../assets/backgroundimg2.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: var(--text-on-deep);
+  padding: 60px 120px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  height: 200px;
+}
+
+.headerTitle {
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.headerSubtitle {
+  font-size: 18px;
+  margin: 0;
+  opacity: 0.9;
+  max-width: 600px;
+}
+
+.headerButton {
+  background: var(--button-bg);
+  color: white;
+  padding: 16px 32px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+  margin-top: 10px;
+
+  &:hover {
+    background: var(--button-hover);
+    text-decoration: none;
+    color: white;
+  }
+}
+
+.arrow {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s ease;
+}
+
+.headerButton:hover .arrow {
+  transform: translateX(2px);
+}
+
+/* Cards Container */
+.cardsContainer {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  padding: 40px 50px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Card Styles */
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  /* gap: 16px; */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  justify-content: space-around;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.order {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-on-light);
+  opacity: 0.7;
+}
+
+.kebab {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--text-on-light);
+  opacity: 0.5;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.cardIconContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.05);
+  margin: 0 auto;
+}
+
+.cardIcon {
+  font-size: 28px;
+  color: var(--text-on-light);
+}
+
+.cardTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-on-light);
+  margin: 0;
+  text-align: center;
+}
+
+.meta {
+  text-align: center;
+  margin-top: auto;
+
+  a {
+    color: var(--text-on-light);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 1;
+      text-decoration: none;
+    }
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header {
+    padding: 40px 30px;
+  }
+
+  .headerTitle {
+    font-size: 36px;
+  }
+
+  .headerSubtitle {
+    font-size: 16px;
+  }
+
+  .card{
+    margin-right: 40px;
+  }
+
+  .cardsContainer {
+    padding: 20px;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    position: initial;
+  }
+}
+
+@media (max-width: 480px) {
+  .headerTitle {
+    font-size: 28px;
+  }
+
+  .headerSubtitle {
+    font-size: 14px;
+  }
+
+  .headerButton {
+    padding: 12px 24px;
+    font-size: 14px;
+  }
+}
+
+/* Error Container */
+.errorContainer {
+  padding: 20px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  margin: 20px;
+  color: #856404;
+
+  h3 {
+    margin: 0 0 12px 0;
+    color: #856404;
+  }
+
+  p {
+    margin: 0 0 8px 0;
+    line-height: 1.5;
+  }
+}

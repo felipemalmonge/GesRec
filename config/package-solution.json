@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "ges-rec-client-side-solution",
+    "id": "82e43913-6032-4492-b9d0-e0954c7b2761",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.18.2"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "ges-rec description"
+      },
+      "longDescription": {
+        "default": "ges-rec description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "ges-rec Feature",
+        "description": "The feature that activates elements of the ges-rec solution.",
+        "id": "85ae29f9-59f7-4a8d-8354-46a742bb1b8a",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/ges-rec.sppkg"
+  }
+}
