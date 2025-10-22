@@ -15,7 +15,7 @@ import '@pnp/sp/lists';
 import '@pnp/sp/fields';
 
 import * as strings from 'ComplaintsCalendarWebPartStrings';
-import ComplaintsCalendar from './components/ComplaintsCalendar';
+import ComplaintsCalendar from './components/ComplaintsCalendarRefactored';
 import { IComplaintsCalendarProps } from './components/IComplaintsCalendarProps';
 
 export interface IComplaintsCalendarWebPartProps {

@@ -117,6 +117,14 @@ const GridComplaints: React.FC<IGridComplaintsProps> = (props) => {
       }
 
       try {
+        // Check if required properties are configured
+        if (!props.listId || !props.dateField || !props.titleField || 
+            props.listId.trim() === '' || props.dateField.trim() === '' || props.titleField.trim() === '') {
+          console.log('Configuration missing - skipping SharePoint API call');
+          setGridData({ items: [], loading: false, error: null });
+          return;
+        }
+
         // Initialize PnP with SPFx context
         const sp: SPFI = spfi().using(SPFx(props.spfxContext));
         

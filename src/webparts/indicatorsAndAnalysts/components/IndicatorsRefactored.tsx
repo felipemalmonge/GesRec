@@ -4,7 +4,6 @@ import { IndicatorsErrorBoundary } from './ErrorBoundary/IndicatorsErrorBoundary
 import { IndicatorsLoadingSpinner } from './LoadingSpinner/IndicatorsLoadingSpinner';
 import { StatCard } from './StatCard/StatCard';
 import { useIndicatorsData } from '../hooks/useIndicatorsData';
-import { IndicatorsService } from '../services/IndicatorsService';
 import { 
   ComponentState,
   ValidationResult,
@@ -27,20 +26,6 @@ const IndicatorsRefactored: React.FC<IIndicatorsAndAnalystsProps> = (props) => {
     listId: props.listId,
     spfxContext: props.spfxContext
   });
-
-  // Calculate statistics using the service
-  const statistics = React.useMemo(() => {
-    if (indicatorsData.indicators.length === 0) {
-      return {
-        total: 0,
-        average: 0,
-        highest: null,
-        lowest: null
-      };
-    }
-
-    return IndicatorsService.prototype.calculateStatistics(indicatorsData.indicators);
-  }, [indicatorsData.indicators]);
 
   // Initial validation of web part properties
   React.useEffect(() => {
@@ -86,13 +71,6 @@ const IndicatorsRefactored: React.FC<IIndicatorsAndAnalystsProps> = (props) => {
       <div className={styles.indicatorsContainer}>
         <div className={styles.indicatorsHeader}>
           <h2 className={styles.indicatorsTitle}>Indicators</h2>
-          {statistics.total > 0 && (
-            <div className={styles.indicatorsSummary}>
-              <span className={styles.summaryText}>
-                Total: {statistics.total} | Average: {statistics.average}
-              </span>
-            </div>
-          )}
         </div>
 
         <div className={styles.indicatorsGrid}>
@@ -107,26 +85,6 @@ const IndicatorsRefactored: React.FC<IIndicatorsAndAnalystsProps> = (props) => {
           ))}
         </div>
 
-        {/* Statistics Section (Optional) */}
-        {statistics.highest && statistics.lowest && (
-          <div className={styles.statisticsSection}>
-            <h3 className={styles.statisticsTitle}>Statistics Summary</h3>
-            <div className={styles.statisticsGrid}>
-              <div className={styles.statisticItem}>
-                <span className={styles.statisticLabel}>Highest:</span>
-                <span className={styles.statisticValue}>
-                  {statistics.highest.title} ({statistics.highest.value})
-                </span>
-              </div>
-              <div className={styles.statisticItem}>
-                <span className={styles.statisticLabel}>Lowest:</span>
-                <span className={styles.statisticValue}>
-                  {statistics.lowest.title} ({statistics.lowest.value})
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </IndicatorsErrorBoundary>
   );

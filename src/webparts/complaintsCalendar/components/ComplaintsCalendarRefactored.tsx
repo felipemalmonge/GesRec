@@ -30,22 +30,49 @@ const ComplaintsCalendarRefactored: React.FC<IComplaintsCalendarProps> = (props)
   //   return new SharePointService(props.spfxContext);
   // }, [props.spfxContext]);
 
-  // Use custom hook for calendar data
+  // Validate configuration first
+  const validation: ValidationResult = React.useMemo(() => {
+    console.log('ComplaintsCalendarRefactored validation - listId:', props.listId, 'dateField:', props.dateField, 'titleField:', props.titleField);
+    const result = CalendarService.validateCalendarConfig({
+      listId: props.listId,
+      dateField: props.dateField,
+      titleField: props.titleField
+    });
+    console.log('Validation result:', result);
+    return result;
+  }, [props.listId, props.dateField, props.titleField]);
+
+  // Show configuration error if validation fails
+  if (!validation.isValid) {
+    return (
+      <div className={styles.complaintsCalendar}>
+        <div className={styles.grid}>
+          <div className={styles.right}>
+            <div className={styles.noDataContainer}>
+              <div className={styles.noDataText}>
+                <h3>Configuration Error</h3>
+                <p>Please configure the web part properties:</p>
+                <ul style={{ textAlign: 'left', margin: '10px 0' }}>
+                  {validation.errors.map((error, index) => (
+                    <li key={index}>• {error}</li>
+                  ))}
+                </ul>
+                <p>Edit the web part and configure these properties in the property pane.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Use custom hook for calendar data only when configuration is valid
   const calendarData = useCalendarData({
     listId: props.listId,
     dateField: props.dateField,
     spfxContext: props.spfxContext,
     currentMonth
   });
-
-  // Validate configuration
-  const validation: ValidationResult = React.useMemo(() => {
-    return CalendarService.validateCalendarConfig({
-      listId: props.listId,
-      dateField: props.dateField,
-      titleField: props.titleField
-    });
-  }, [props.listId, props.dateField, props.titleField]);
 
   // Generate calendar month
   const calendarMonth = React.useMemo(() => {

@@ -9,7 +9,7 @@ import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 
 import * as strings from 'IndicatorsAndAnalystsWebPartStrings';
-import IndicatorsAndAnalysts from './components/IndicatorsAndAnalysts';
+import IndicatorsAndAnalysts from './components/IndicatorsAndAnalystsRefactored';
 import { IIndicatorsAndAnalystsProps } from './components/IIndicatorsAndAnalystsProps';
 import { IIndicatorsAndAnalystsWebPartProps } from './IIndicatorsAndAnalystsWebPartProps';
 

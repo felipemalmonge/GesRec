@@ -9,7 +9,7 @@ import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 
 import * as strings from 'GesRecWebPartStrings';
-import GesRec from './components/GesRec';
+import GesRec from './components/GesRecRefactored';
 import { IGesRecProps } from './components/IGesRecProps';
 
 export interface IGesRecWebPartProps {

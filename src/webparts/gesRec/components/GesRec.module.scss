@@ -12,7 +12,8 @@
 
 .wrapper {
   background: var(--bg-light);
-  min-height: 50vh;
+  //min-height: 50vh;
+  min-height: 480px;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -228,6 +229,19 @@
   }
 }
 
+
+/* @media (min-width: 1921px) {
+  .wrapper {
+    min-height: 40vh;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1921px) {
+  .wrapper {
+    min-height: 50vh;
+  }
+}
+ */
 /* Error Container */
 .errorContainer {
   padding: 20px;

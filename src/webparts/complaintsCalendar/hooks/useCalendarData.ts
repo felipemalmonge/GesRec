@@ -58,8 +58,9 @@ export const useCalendarData = ({ listId, dateField, spfxContext, currentMonth }
 
   // Fetch calendar data
   const fetchCalendarData = async (): Promise<void> => {
-    if (!listId || !dateField) {
+    if (!listId || !dateField || listId.trim() === '' || dateField.trim() === '') {
       setError('List ID and Date Field are required');
+      setLoading(false);
       return;
     }
 
@@ -73,10 +74,13 @@ export const useCalendarData = ({ listId, dateField, spfxContext, currentMonth }
       const startDate = formatDateForSharePoint(startOfMonth);
       const endDate = formatDateForSharePoint(endOfMonth);
 
-      const items: any[] = await (sp.web.lists.getById(listId).items as any)
+      console.log('Making SharePoint API call with listId:', listId, 'dateField:', dateField);
+      
+      const items: any[] = await sp.web.lists.getById(listId).items
         .select(`Id, ${dateField}`)
         .filter(`${dateField} ge datetime'${startDate}T00:00:00Z' and ${dateField} le datetime'${endDate}T23:59:59Z'`)
-        .get();
+        .top(5000)()
+        // .get() is not a valid method on IItems - use () as a function call to execute the query
 
       const counts = new Map<string, number>();
       
@@ -100,7 +104,19 @@ export const useCalendarData = ({ listId, dateField, spfxContext, currentMonth }
 
   // Effect to fetch data when dependencies change
   useEffect(() => {
-    fetchCalendarData();
+    console.log('useCalendarData useEffect - listId:', listId, 'dateField:', dateField);
+    
+    // Only fetch data if we have valid configuration
+    if (listId && dateField && listId.trim() !== '' && dateField.trim() !== '' && listId !== 'undefined' && dateField !== 'undefined') {
+      console.log('Configuration valid - fetching calendar data');
+      fetchCalendarData();
+    } else {
+      console.log('Configuration invalid - skipping API call');
+      // Clear data and set error if configuration is invalid
+      setDateCounts(new Map());
+      setLoading(false);
+      setError('List ID and Date Field are required');
+    }
   }, [listId, dateField, currentMonth]);
 
   return {
