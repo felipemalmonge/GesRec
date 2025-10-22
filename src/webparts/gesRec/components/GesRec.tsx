@@ -55,10 +55,10 @@ const getCourses = (props: IGesRecProps): Course[] => [
 const titleToIconName: Record<string, string> = {
   'Servicing App': 'ReminderGroup',
   'Reports': 'ReportDocument',
-  'Search Complaints': 'Search'
+  'Search': 'SearchAndApps'
 };
 
-const GesRec: React.FC<IGesRecProps> = (props) => {
+const GesRec2: React.FC<IGesRecProps> = (props) => {
   const courses = getCourses(props);
 
     return (
@@ -100,4 +100,4 @@ const GesRec: React.FC<IGesRecProps> = (props) => {
     );
   }
 
-  export default GesRec;
+  export default GesRec2;

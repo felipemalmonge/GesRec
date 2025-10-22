@@ -60,7 +60,7 @@ export class CourseService {
     return {
       'Servicing App': 'ReminderGroup',
       'Reports': 'ReportDocument',
-      'Search': 'Search'
+      'Search': 'SearchAndApps'
     };
   }
 
