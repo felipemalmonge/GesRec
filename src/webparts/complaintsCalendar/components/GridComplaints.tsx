@@ -245,7 +245,7 @@ const GridComplaints: React.FC<IGridComplaintsProps> = (props) => {
                 </p>
                 <div className={styles.meta}>
                   {item[props.dateField] ? 
-                    new Date(item[props.dateField]).toLocaleDateString() : 
+                    new Date(item[props.dateField]).toLocaleDateString('pt-PT') : 
                     'No date'
                   }
                 </div>

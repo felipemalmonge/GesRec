@@ -139,15 +139,21 @@ export const useIndicatorsData = ({ listId, statusColumn, dateTestColumn, spfxCo
       const selectFields = ['Id', 'Title'];
       if (statusColumn) selectFields.push(statusColumn);
       if (dateTestColumn) selectFields.push(dateTestColumn);
-      
-      const listUrl = `${webUrl}/_api/web/lists('${listId}')/items?$select=${selectFields.join(',')}`;
-      
-      console.log('Fetching from URL:', listUrl);
-      
-      const response = await spfxContext.spHttpClient.get(listUrl, SPHttpClient.configurations.v1);
-      const data = await response.json();
-      const items = data.value || [];
 
+      // Helper to fetch all items with paging
+      const fetchAllItems = async (): Promise<any[]> => {
+        let items: any[] = [];
+        let nextUrl = `${webUrl}/_api/web/lists('${listId}')/items?$select=${selectFields.join(',')}&$top=100`;
+        while (nextUrl) {
+          const response = await spfxContext.spHttpClient.get(nextUrl, SPHttpClient.configurations.v1);
+          const data = await response.json();
+          items = items.concat(data.value || []);
+          nextUrl = data['@odata.nextLink'] || null;
+        }
+        return items;
+      };
+
+      const items = await fetchAllItems();
       console.log('Fetched items:', items);
 
       // Calculate counts based on specific criteria using dynamic column names
@@ -157,12 +163,17 @@ export const useIndicatorsData = ({ listId, statusColumn, dateTestColumn, spfxCo
       const complaintsCount = items.filter((item: any) => item[statusField] !== 'CLOSED').length;
       
       const today = new Date();
-      const todayString = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      const todayYear = today.getFullYear();
+      const todayMonth = today.getMonth();
+      const todayDate = today.getDate();
       const answerLimitCount = items.filter((item: any) => {
         if (!item[dateField]) return false;
         const itemDate = new Date(item[dateField]);
-        const itemDateString = itemDate.toISOString().split('T')[0];
-        return itemDateString === todayString;
+        return (
+          itemDate.getFullYear() === todayYear &&
+          itemDate.getMonth() === todayMonth &&
+          itemDate.getDate() === todayDate
+        );
       }).length;
       
       const clarificationsCount = items.filter((item: any) => item[statusField] === 'PENDING').length;
