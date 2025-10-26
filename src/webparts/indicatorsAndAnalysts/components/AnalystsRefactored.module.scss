@@ -1,0 +1,225 @@
+@import '~@fluentui/react/dist/sass/References.scss';
+
+.analystsSection {
+  background: $ms-color-white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.analystsTitle {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: $ms-color-neutralPrimary;
+  border-bottom: 2px solid $ms-color-themePrimary;
+  padding-bottom: 8px;
+}
+
+.analystsContent {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+  
+  // Custom scrollbar
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: $ms-color-neutralLighter;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: $ms-color-neutralTertiary;
+    border-radius: 3px;
+    
+    &:hover {
+      background: $ms-color-neutralSecondary;
+    }
+  }
+}
+
+.analystCard {
+  margin-bottom: 12px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Loading state
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid $ms-color-neutralLighter;
+  border-top: 4px solid $ms-color-themePrimary;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loadingText {
+  margin: 0;
+  font-size: 14px;
+  color: $ms-color-neutralSecondary;
+}
+
+// Error state
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.errorIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.errorTitle {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: $ms-color-red;
+}
+
+.errorMessage {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: $ms-color-neutralSecondary;
+}
+
+.errorHint {
+  margin: 0;
+  font-size: 12px;
+  color: $ms-color-neutralTertiary;
+  font-style: italic;
+}
+
+// Empty state
+.emptyContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.emptyTitle {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: $ms-color-neutralPrimary;
+}
+
+.emptyMessage {
+  margin: 0;
+  font-size: 14px;
+  color: $ms-color-neutralSecondary;
+}
+
+// Footer with summary
+.analystsFooter {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid $ms-color-neutralLight;
+}
+
+.analystsSummary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.summaryText {
+  font-size: 14px;
+  font-weight: 500;
+  color: $ms-color-neutralPrimary;
+}
+
+.statusSummary {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.statusCount {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background-color: $ms-color-neutralLighter;
+  color: $ms-color-neutralSecondary;
+  font-weight: 500;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .analystsSection {
+    padding: 16px;
+  }
+
+  .analystsTitle {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  .analystsSummary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .statusSummary {
+    gap: 8px;
+  }
+
+  .statusCount {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .analystsSection {
+    padding: 12px;
+  }
+
+  .analystsTitle {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .statusSummary {
+    flex-direction: column;
+    gap: 4px;
+  }
+}

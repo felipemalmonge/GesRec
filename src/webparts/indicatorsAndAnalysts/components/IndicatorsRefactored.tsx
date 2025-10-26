@@ -16,6 +16,8 @@ import type { IIndicatorsAndAnalystsProps } from './IIndicatorsAndAnalystsProps'
  * Implements best practices: custom hooks, service layer, error boundaries, loading states
  */
 const IndicatorsRefactored: React.FC<IIndicatorsAndAnalystsProps> = (props) => {
+  console.log('IndicatorsRefactored component rendered with props:', { listId: props.listId, hasContext: !!props.spfxContext });
+  
   const [componentState, setComponentState] = React.useState<ComponentState>({
     isLoading: false,
     error: null
@@ -24,6 +26,8 @@ const IndicatorsRefactored: React.FC<IIndicatorsAndAnalystsProps> = (props) => {
   // Use custom hook for indicators data
   const indicatorsData = useIndicatorsData({
     listId: props.listId,
+    statusColumn: props.statusColumn,
+    dateTestColumn: props.dateTestColumn,
     spfxContext: props.spfxContext
   });
 

@@ -3,6 +3,7 @@ import styles from './IndicatorsAndAnalystsRefactored.module.scss';
 import { IndicatorsErrorBoundary } from './ErrorBoundary/IndicatorsErrorBoundary';
 import { IndicatorsLoadingSpinner } from './LoadingSpinner/IndicatorsLoadingSpinner';
 import IndicatorsRefactored from './IndicatorsRefactored';
+import AnalystsRefactored from './AnalystsRefactored';
 import { 
   ComponentState,
   ValidationResult
@@ -71,55 +72,18 @@ const IndicatorsAndAnalystsRefactored: React.FC<IIndicatorsAndAnalystsProps> = (
 
           {/* Right Section - Complaint Analysts (1fr) */}
           <div className={styles.right}>
-            <div className={styles.analystsSection}>
-              <h2 className={styles.analystsTitle}>Complaint Analysts</h2>
-              <div className={styles.analystsContent}>
-                <div className={styles.analystCard}>
-                  <div className={styles.analystAvatar}>
-                    <img 
-                      src="https://via.placeholder.com/60x60/0078d4/ffffff?text=JD" 
-                      alt="John Doe"
-                      className={styles.avatarImage}
-                    />
-                  </div>
-                  <div className={styles.analystInfo}>
-                    <h3 className={styles.analystName}>John Doe</h3>
-                    <p className={styles.analystRole}>Senior Analyst</p>
-                    <p className={styles.analystStatus}>Available</p>
-                  </div>
-                </div>
-
-                <div className={styles.analystCard}>
-                  <div className={styles.analystAvatar}>
-                    <img 
-                      src="https://via.placeholder.com/60x60/28a745/ffffff?text=JS" 
-                      alt="Jane Smith"
-                      className={styles.avatarImage}
-                    />
-                  </div>
-                  <div className={styles.analystInfo}>
-                    <h3 className={styles.analystName}>Jane Smith</h3>
-                    <p className={styles.analystRole}>Analyst</p>
-                    <p className={styles.analystStatus}>Busy</p>
-                  </div>
-                </div>
-
-                <div className={styles.analystCard}>
-                  <div className={styles.analystAvatar}>
-                    <img 
-                      src="https://via.placeholder.com/60x60/ffc107/ffffff?text=MB" 
-                      alt="Mike Brown"
-                      className={styles.avatarImage}
-                    />
-                  </div>
-                  <div className={styles.analystInfo}>
-                    <h3 className={styles.analystName}>Mike Brown</h3>
-                    <p className={styles.analystRole}>Junior Analyst</p>
-                    <p className={styles.analystStatus}>Available</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <AnalystsRefactored
+              listId={props.listId}
+              analystsListId={props.analystsListId}
+              spfxContext={props.spfxContext}
+              title="Complaint Analysts"
+              showTitle={true}
+              showDetails={false}
+              onAnalystClick={(analyst) => {
+                console.log('Analyst selected:', analyst);
+                // Handle analyst selection logic here
+              }}
+            />
           </div>
         </div>
       </div>

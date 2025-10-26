@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { spfi, SPFI } from '@pnp/sp';
 import { SPFx } from '@pnp/sp';
 import { WebPartContext } from '@microsoft/sp-webpart-base';
+import { SPHttpClient } from '@microsoft/sp-http';
 
 export interface IndicatorData {
   id: string;
@@ -20,28 +21,63 @@ export interface IndicatorsData {
 
 export interface UseIndicatorsDataProps {
   listId?: string;
+  statusColumn?: string;
+  dateTestColumn?: string;
   spfxContext: WebPartContext;
 }
 
 /**
  * Custom hook for managing indicators data and calculations
  */
-export const useIndicatorsData = ({ listId, spfxContext }: UseIndicatorsDataProps): IndicatorsData => {
+export const useIndicatorsData = ({ listId, statusColumn, dateTestColumn, spfxContext }: UseIndicatorsDataProps): IndicatorsData => {
+  console.log('useIndicatorsData hook initialized with:', { listId, spfxContext: !!spfxContext });
+  console.log('About to create SP instance...');
+  
   const [indicators, setIndicators] = useState<IndicatorData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   // Initialize PnP SP instance
-  const sp: SPFI = useMemo(() => {
-    return spfi().using(SPFx(spfxContext));
+  const sp: SPFI | null = useMemo(() => {
+    console.log('Creating SP instance with context:', !!spfxContext);
+    console.log('SPFx context details:', {
+      hasContext: !!spfxContext,
+      hasPageContext: !!spfxContext?.pageContext,
+      hasWeb: !!spfxContext?.pageContext?.web,
+      webUrl: spfxContext?.pageContext?.web?.absoluteUrl
+    });
+    
+    if (!spfxContext) {
+      console.error('spfxContext is null or undefined');
+      return null;
+    }
+    
+    try {
+      console.log('Attempting to create SP instance...');
+      const spInstance = spfi().using(SPFx(spfxContext));
+      console.log('SP instance created successfully:', !!spInstance);
+      console.log('SP instance web property:', !!spInstance?.web);
+      return spInstance;
+    } catch (error) {
+      console.error('Error creating SP instance:', error);
+      return null;
+    }
   }, [spfxContext]);
 
-  // Default indicators configuration
-  const defaultIndicators: IndicatorData[] = useMemo(() => [
+  console.log('SP instance after creation:', {
+    spExists: !!sp,
+    spWebExists: !!(sp && sp.web),
+    spType: typeof sp
+  });
+
+  // Function to create indicators with dynamic values
+  const createIndicators = useCallback((complaintsCount: number = 0, answerLimitCount: number = 0, clarificationsCount: number = 0): IndicatorData[] => {
+    console.log('createIndicators called with:', { complaintsCount, answerLimitCount, clarificationsCount });
+    return [
     {
       id: 'complaints',
       title: 'Total complaints (Status not closed)',
-      value: 2,
+      value: complaintsCount,
       icon: 'bad-review.png',
       color: '#dc3545',
       description: 'Active complaints requiring attention'
@@ -49,7 +85,7 @@ export const useIndicatorsData = ({ listId, spfxContext }: UseIndicatorsDataProp
     {
       id: 'answer-limit',
       title: 'Answer Limit Date Today',
-      value: 3,
+      value: answerLimitCount,
       icon: 'calendar.png',
       color: '#ffc107',
       description: 'Complaints with deadlines today'
@@ -57,17 +93,35 @@ export const useIndicatorsData = ({ listId, spfxContext }: UseIndicatorsDataProp
     {
       id: 'clarifications',
       title: 'Clarifications Pending',
-      value: 8,
+      value: clarificationsCount,
       icon: 'file.png',
       color: '#17a2b8',
       description: 'Pending clarification requests'
     }
-  ], []);
+  ];
+  }, []);
+
+  // Default indicators configuration (used when no list is selected or as fallback)
+  const defaultIndicators: IndicatorData[] = useMemo(() => createIndicators(2, 3, 8), [createIndicators]);
 
   // Fetch indicators data from SharePoint (if listId provided)
-  const fetchIndicatorsData = async (): Promise<void> => {
+  const fetchIndicatorsData = useCallback(async (): Promise<void> => {
+    console.log('fetchIndicatorsData called with:', { listId, statusColumn, dateTestColumn });
+    
     if (!listId) {
       // Use default data if no list configured
+      console.log('No listId provided, using default indicators');
+      setIndicators(defaultIndicators);
+      return;
+    }
+
+    if (!spfxContext || !spfxContext.pageContext || !spfxContext.pageContext.web) {
+      console.warn('SPFx context not properly initialized');
+      console.log('SPFx context details:', {
+        hasContext: !!spfxContext,
+        hasPageContext: !!spfxContext?.pageContext,
+        hasWeb: !!spfxContext?.pageContext?.web
+      });
       setIndicators(defaultIndicators);
       return;
     }
@@ -76,44 +130,47 @@ export const useIndicatorsData = ({ listId, spfxContext }: UseIndicatorsDataProp
     setError(null);
 
     try {
-      // Example: Fetch data from SharePoint list
-      // This would be customized based on your specific SharePoint list structure
-      const items: any[] = await (sp.web.lists.getById(listId).items as any)
-        .select('Id', 'Title', 'Status', 'DueDate', 'ClarificationStatus')
-        .get();
+      console.log('Fetching data from SharePoint list:', listId);
+      
+      // Use SPHttpClient instead of PnP SP for more reliable data fetching
+      const webUrl = spfxContext.pageContext.web.absoluteUrl;
+      
+      // Build dynamic select fields
+      const selectFields = ['Id', 'Title'];
+      if (statusColumn) selectFields.push(statusColumn);
+      if (dateTestColumn) selectFields.push(dateTestColumn);
+      
+      const listUrl = `${webUrl}/_api/web/lists('${listId}')/items?$select=${selectFields.join(',')}`;
+      
+      console.log('Fetching from URL:', listUrl);
+      
+      const response = await spfxContext.spHttpClient.get(listUrl, SPHttpClient.configurations.v1);
+      const data = await response.json();
+      const items = data.value || [];
 
-      // Process SharePoint data into indicators
-      const processedIndicators: IndicatorData[] = [
-        {
-          id: 'complaints',
-          title: 'Total complaints (Status not closed)',
-          value: items.filter(item => item.Status !== 'Closed').length,
-          icon: 'bad-review.png',
-          color: '#dc3545',
-          description: 'Active complaints requiring attention'
-        },
-        {
-          id: 'answer-limit',
-          title: 'Answer Limit Date Today',
-          value: items.filter(item => {
-            if (!item.DueDate) return false;
-            const dueDate = new Date(item.DueDate);
-            const today = new Date();
-            return dueDate.toDateString() === today.toDateString();
-          }).length,
-          icon: 'calendar.png',
-          color: '#ffc107',
-          description: 'Complaints with deadlines today'
-        },
-        {
-          id: 'clarifications',
-          title: 'Clarifications Pending',
-          value: items.filter(item => item.ClarificationStatus === 'Pending').length,
-          icon: 'file.png',
-          color: '#17a2b8',
-          description: 'Pending clarification requests'
-        }
-      ];
+      console.log('Fetched items:', items);
+
+      // Calculate counts based on specific criteria using dynamic column names
+      const statusField = statusColumn || 'STATUS_';
+      const dateField = dateTestColumn || 'DateTest';
+      
+      const complaintsCount = items.filter((item: any) => item[statusField] !== 'CLOSED').length;
+      
+      const today = new Date();
+      const todayString = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      const answerLimitCount = items.filter((item: any) => {
+        if (!item[dateField]) return false;
+        const itemDate = new Date(item[dateField]);
+        const itemDateString = itemDate.toISOString().split('T')[0];
+        return itemDateString === todayString;
+      }).length;
+      
+      const clarificationsCount = items.filter((item: any) => item[statusField] === 'PENDING').length;
+
+      console.log('Calculated counts:', { complaintsCount, answerLimitCount, clarificationsCount });
+
+      // Process SharePoint data into indicators with real counts
+      const processedIndicators: IndicatorData[] = createIndicators(complaintsCount, answerLimitCount, clarificationsCount);
 
       setIndicators(processedIndicators);
     } catch (err) {
@@ -124,12 +181,13 @@ export const useIndicatorsData = ({ listId, spfxContext }: UseIndicatorsDataProp
     } finally {
       setLoading(false);
     }
-  };
+  }, [listId, statusColumn, dateTestColumn, spfxContext, createIndicators]);
 
   // Effect to fetch data when dependencies change
   useEffect(() => {
+    console.log('useEffect triggered, calling fetchIndicatorsData');
     fetchIndicatorsData();
-  }, [listId, spfxContext]);
+  }, [fetchIndicatorsData]);
 
   return {
     indicators,

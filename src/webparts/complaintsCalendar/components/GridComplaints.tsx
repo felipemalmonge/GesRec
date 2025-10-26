@@ -241,7 +241,7 @@ const GridComplaints: React.FC<IGridComplaintsProps> = (props) => {
                   </a>
                 </h3>
                 <p className={styles.desc}>
-                  Complaint ID: {item.Id} - Click to view details and manage this complaint.
+                  Complaint ID: {item.Id}
                 </p>
                 <div className={styles.meta}>
                   {item[props.dateField] ? 
