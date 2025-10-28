@@ -3,7 +3,7 @@
   "solution": {
     "name": "ges-rec-client-side-solution",
     "id": "82e43913-6032-4492-b9d0-e0954c7b2761",
-    "version": "1.0.0.0",
+    "version": "1.0.0.2",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,
