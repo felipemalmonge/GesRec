@@ -16,7 +16,7 @@ import type { IComplaintsCalendarProps } from './IComplaintsCalendarProps';
  * Refactored ComplaintsCalendar component with improved architecture patterns
  */
 const ComplaintsCalendarRefactored: React.FC<IComplaintsCalendarProps> = (props) => {
-  const [currentMonth, setCurrentMonth] = React.useState<Date>(() => new Date(2025, 9, 1));
+  const [currentMonth, setCurrentMonth] = React.useState<Date>(() => new Date());
   const [selectedDate, setSelectedDate] = React.useState<string | null>(null);
   const [componentState, setComponentState] = React.useState<ComponentState>({
     isLoading: false,
