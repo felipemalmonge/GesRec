@@ -4,6 +4,7 @@ import { Icon, initializeIcons } from '@fluentui/react';
 import type { IGesRecProps } from './IGesRecProps';
 import { useUrlUtils } from '../hooks/useUrlUtils';
 import { CourseService } from '../services/CourseService';
+import { ExcelExportService } from '../services/ExcelExportService';
 import { ErrorBoundary } from './ErrorBoundary/ErrorBoundary';
 import { LoadingSpinner } from './LoadingSpinner/LoadingSpinner';
 import { ComponentState } from '../types';
@@ -110,6 +111,8 @@ const GesRec: React.FC<IGesRecProps> = (props) => {
               course={course}
               iconName={iconMapping[course.title]}
               toAbsoluteUrl={toAbsoluteUrl}
+              spfxContext={props.spfxContext}
+              complaintsListId={props.complaintsListId}
             />
           ))}
         </div>
@@ -125,15 +128,58 @@ interface ICourseCardProps {
   course: import('../services/CourseService').Course;
   iconName: string;
   toAbsoluteUrl: (url?: string) => string;
+  spfxContext: import('@microsoft/sp-webpart-base').WebPartContext;
+  complaintsListId?: string;
 }
 
-const CourseCard: React.FC<ICourseCardProps> = ({ course, iconName, toAbsoluteUrl }) => {
+const CourseCard: React.FC<ICourseCardProps> = ({ course, iconName, toAbsoluteUrl, spfxContext, complaintsListId }) => {
+  const [isExporting, setIsExporting] = React.useState(false);
+
+  const handleCardClick = async () => {
+    if (course.title === 'Reports') {
+      // Validate configuration
+      const validation = ExcelExportService.validateExportConfig({
+        listId: complaintsListId,
+        spfxContext: spfxContext
+      });
+
+      if (!validation.isValid) {
+        alert(`Cannot export: ${validation.error}`);
+        return;
+      }
+
+      // Export to Excel
+      setIsExporting(true);
+      try {
+        await ExcelExportService.exportListToExcel({
+          listId: complaintsListId!,
+          spfxContext: spfxContext,
+          fileName: 'Complaints_Report'
+        });
+        alert('Excel file downloaded successfully!');
+      } catch (error) {
+        console.error('Export error:', error);
+        alert(`Error exporting data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      } finally {
+        setIsExporting(false);
+      }
+    } else {
+      // Navigate to the link for non-Reports cards
+      window.open(toAbsoluteUrl(course.link), '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
     <article 
       className={styles.card} 
-      style={{ backgroundColor: course.accent }}
+      style={{ 
+        backgroundColor: course.accent, 
+        cursor: isExporting ? 'wait' : 'pointer',
+        opacity: isExporting ? 0.7 : 1 
+      }}
       role="article"
       aria-label={`${course.title} - ${course.lessonsTotal} lessons`}
+      onClick={isExporting ? undefined : handleCardClick}
     >
       <div className={styles.cardIconContainer}>
         <Icon 
@@ -146,14 +192,9 @@ const CourseCard: React.FC<ICourseCardProps> = ({ course, iconName, toAbsoluteUr
       <h3 className={styles.cardTitle}>{course.title}</h3>
 
       <div className={styles.meta}>
-        <a 
-          href={toAbsoluteUrl(course.link)} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          aria-label={`Access ${course.title}`}
-        >
-          Access here
-        </a>
+        <span style={{ color: 'inherit', textDecoration: 'underline' }}>
+          {isExporting ? 'Exporting...' : 'Access here'}
+        </span>
       </div>
     </article>
   );

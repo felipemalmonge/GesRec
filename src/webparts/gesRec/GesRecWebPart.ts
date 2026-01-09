@@ -18,6 +18,7 @@ export interface IGesRecWebPartProps {
   servicingAppUrl: string;
   reportsUrl: string;
   searchUrl: string;
+  complaintsListId: string;
 }
 
 export default class GesRecWebPart extends BaseClientSideWebPart<IGesRecWebPartProps> {
@@ -37,7 +38,9 @@ export default class GesRecWebPart extends BaseClientSideWebPart<IGesRecWebPartP
         isDarkTheme: this._isDarkTheme,
         environmentMessage: this._environmentMessage,
         hasTeamsContext: !!this.context.sdks.microsoftTeams,
-        userDisplayName: this.context.pageContext.user.displayName
+        userDisplayName: this.context.pageContext.user.displayName,
+        spfxContext: this.context,
+        complaintsListId: this.properties.complaintsListId
       }
     );
 
@@ -130,6 +133,10 @@ export default class GesRecWebPart extends BaseClientSideWebPart<IGesRecWebPartP
                 }),
                 PropertyPaneTextField('searchUrl', {
                   label: strings.SearchUrlFieldLabel
+                }),
+                PropertyPaneTextField('complaintsListId', {
+                  label: 'Complaints List ID',
+                  description: 'Enter the GUID of the SharePoint COMPLAINTS list for Excel export'
                 })
               ]
             }

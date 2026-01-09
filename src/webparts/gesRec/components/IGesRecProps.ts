@@ -1,3 +1,5 @@
+import { WebPartContext } from '@microsoft/sp-webpart-base';
+
 export interface IGesRecProps {
   description: string;
   complaintsAppUrl: string;
@@ -8,4 +10,6 @@ export interface IGesRecProps {
   environmentMessage: string;
   hasTeamsContext: boolean;
   userDisplayName: string;
+  spfxContext: WebPartContext;
+  complaintsListId?: string;
 }
