@@ -15,4 +15,5 @@ export interface IGesRecProps {
   complaintsDocumentsListId?: string;
   complaintsArchiveListId?: string;
   archiveDocumentsListId?: string;
+  hideSharePointElements?: boolean;
 }

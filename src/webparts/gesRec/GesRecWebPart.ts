@@ -3,7 +3,8 @@ import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
 import {
   type IPropertyPaneConfiguration,
-  PropertyPaneTextField
+  PropertyPaneTextField,
+  PropertyPaneToggle
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
@@ -22,6 +23,7 @@ export interface IGesRecWebPartProps {
   complaintsDocumentsListId: string;
   complaintsArchiveListId: string;
   archiveDocumentsListId: string;
+  hideSharePointElements: boolean;
 }
 
 export default class GesRecWebPart extends BaseClientSideWebPart<IGesRecWebPartProps> {
@@ -46,7 +48,8 @@ export default class GesRecWebPart extends BaseClientSideWebPart<IGesRecWebPartP
         complaintsListId: this.properties.complaintsListId,
         complaintsDocumentsListId: this.properties.complaintsDocumentsListId,
         complaintsArchiveListId: this.properties.complaintsArchiveListId,
-        archiveDocumentsListId: this.properties.archiveDocumentsListId
+        archiveDocumentsListId: this.properties.archiveDocumentsListId,
+        hideSharePointElements: this.properties.hideSharePointElements
       }
     );
 
@@ -155,6 +158,12 @@ export default class GesRecWebPart extends BaseClientSideWebPart<IGesRecWebPartP
                 PropertyPaneTextField('archiveDocumentsListId', {
                   label: 'Archive Documents List ID',
                   description: 'Enter the GUID of the SharePoint ARCHIVE DOCUMENTS list'
+                }),
+                PropertyPaneToggle('hideSharePointElements', {
+                  label: 'Hide SharePoint UI Elements',
+                  onText: 'Hidden',
+                  offText: 'Visible',
+                  checked: this.properties.hideSharePointElements
                 })
               ]
             }

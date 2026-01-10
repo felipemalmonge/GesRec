@@ -47,6 +47,37 @@ const GesRec: React.FC<IGesRecProps> = (props) => {
     });
   }, [props.servicingAppUrl, props.reportsUrl, props.searchUrl]);
 
+  // Handle hiding/showing SharePoint UI elements
+  React.useEffect(() => {
+    const elementIds = ['sp-appBar', 'SuiteNavWrapper', 'spSiteHeader'];
+    
+    if (props.hideSharePointElements) {
+      elementIds.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.style.display = 'none';
+        }
+      });
+    } else {
+      elementIds.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.style.display = '';
+        }
+      });
+    }
+
+    // Cleanup on unmount - restore visibility
+    return () => {
+      elementIds.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.style.display = '';
+        }
+      });
+    };
+  }, [props.hideSharePointElements]);
+
   // Handle configuration errors
   React.useEffect(() => {
     if (!validation.isValid) {
