@@ -6,10 +6,17 @@ import '@pnp/sp/items';
 import '@pnp/sp/fields';
 import * as XLSX from 'xlsx';
 
+export interface ExportFilterOptions {
+  statuses?: string[];
+  startDate?: Date;
+  endDate?: Date;
+}
+
 export interface ExportOptions {
   listId: string;
   spfxContext: WebPartContext;
   fileName?: string;
+  filters?: ExportFilterOptions;
 }
 
 /**
@@ -20,7 +27,7 @@ export class ExcelExportService {
    * Export all data from a SharePoint list to Excel file
    */
   public static async exportListToExcel(options: ExportOptions): Promise<void> {
-    const { listId, spfxContext, fileName = 'Complaints_Export' } = options;
+    const { listId, spfxContext, fileName = 'Complaints_Export', filters } = options;
 
     if (!listId) {
       throw new Error('List ID is required for export');
@@ -32,6 +39,8 @@ export class ExcelExportService {
       
       // Fetch all items from the list
       console.log('Fetching data from SharePoint list:', listId);
+      console.log('Filters:', filters);
+      
       const list = sp.web.lists.getById(listId);
       
       // Get list fields to determine what to export
@@ -51,10 +60,43 @@ export class ExcelExportService {
       
       console.log('Simple fields to export:', simpleFields.map(f => f.InternalName));
       
+      // Build filter query
+      const filterParts: string[] = [];
+      
+      // Add status filter if provided
+      if (filters?.statuses && filters.statuses.length > 0) {
+        const statusFilters = filters.statuses.map(status => 
+          `STATUS_ eq '${status}'`
+        ).join(' or ');
+        filterParts.push(`(${statusFilters})`);
+      }
+      
+      // Add date range filter if provided
+      if (filters?.startDate || filters?.endDate) {
+        if (filters.startDate) {
+          const startDateISO = filters.startDate.toISOString();
+          filterParts.push(`Answer_x0020_Limit_x0020_date ge datetime'${startDateISO}'`);
+        }
+        if (filters.endDate) {
+          // Set end date to end of day
+          const endDate = new Date(filters.endDate);
+          endDate.setHours(23, 59, 59, 999);
+          const endDateISO = endDate.toISOString();
+          filterParts.push(`Answer_x0020_Limit_x0020_date le datetime'${endDateISO}'`);
+        }
+      }
+      
+      const filterQuery = filterParts.length > 0 ? filterParts.join(' and ') : '';
+      console.log('Filter query:', filterQuery);
+      
       // Get all items with simple fields only
-      const items = await list.items
-        .top(5000)
-        .select(...simpleFields.map(f => f.InternalName))();
+      let query = list.items.top(5000).select(...simpleFields.map(f => f.InternalName));
+      
+      if (filterQuery) {
+        query = query.filter(filterQuery);
+      }
+      
+      const items = await query();
 
       console.log(`Fetched ${items.length} items from SharePoint`);
 

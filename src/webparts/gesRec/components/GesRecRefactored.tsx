@@ -4,7 +4,7 @@ import { Icon, initializeIcons } from '@fluentui/react';
 import type { IGesRecProps } from './IGesRecProps';
 import { useUrlUtils } from '../hooks/useUrlUtils';
 import { CourseService } from '../services/CourseService';
-import { ExcelExportService } from '../services/ExcelExportService';
+import { ExportFilterPanel } from './ExportFilterPanel';
 import { ErrorBoundary } from './ErrorBoundary/ErrorBoundary';
 import { LoadingSpinner } from './LoadingSpinner/LoadingSpinner';
 import { ComponentState } from '../types';
@@ -20,6 +20,7 @@ const GesRec: React.FC<IGesRecProps> = (props) => {
     isLoading: false,
     error: null
   });
+  const [isExportPanelOpen, setIsExportPanelOpen] = React.useState(false);
 
   // Memoize courses to prevent unnecessary re-renders
   const courses = React.useMemo(() => {
@@ -111,11 +112,18 @@ const GesRec: React.FC<IGesRecProps> = (props) => {
               course={course}
               iconName={iconMapping[course.title]}
               toAbsoluteUrl={toAbsoluteUrl}
-              spfxContext={props.spfxContext}
-              complaintsListId={props.complaintsListId}
+              onOpenExportPanel={() => setIsExportPanelOpen(true)}
             />
           ))}
         </div>
+
+        {/* Export Filter Panel */}
+        <ExportFilterPanel
+          isOpen={isExportPanelOpen}
+          onDismiss={() => setIsExportPanelOpen(false)}
+          spfxContext={props.spfxContext}
+          complaintsListId={props.complaintsListId}
+        />
       </section>
     </ErrorBoundary>
   );
@@ -128,41 +136,14 @@ interface ICourseCardProps {
   course: import('../services/CourseService').Course;
   iconName: string;
   toAbsoluteUrl: (url?: string) => string;
-  spfxContext: import('@microsoft/sp-webpart-base').WebPartContext;
-  complaintsListId?: string;
+  onOpenExportPanel: () => void;
 }
 
-const CourseCard: React.FC<ICourseCardProps> = ({ course, iconName, toAbsoluteUrl, spfxContext, complaintsListId }) => {
-  const [isExporting, setIsExporting] = React.useState(false);
-
-  const handleCardClick = async () => {
+const CourseCard: React.FC<ICourseCardProps> = ({ course, iconName, toAbsoluteUrl, onOpenExportPanel }) => {
+  const handleCardClick = () => {
     if (course.title === 'Reports') {
-      // Validate configuration
-      const validation = ExcelExportService.validateExportConfig({
-        listId: complaintsListId,
-        spfxContext: spfxContext
-      });
-
-      if (!validation.isValid) {
-        alert(`Cannot export: ${validation.error}`);
-        return;
-      }
-
-      // Export to Excel
-      setIsExporting(true);
-      try {
-        await ExcelExportService.exportListToExcel({
-          listId: complaintsListId!,
-          spfxContext: spfxContext,
-          fileName: 'Complaints_Report'
-        });
-        alert('Excel file downloaded successfully!');
-      } catch (error) {
-        console.error('Export error:', error);
-        alert(`Error exporting data: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      } finally {
-        setIsExporting(false);
-      }
+      // Open the export filter panel
+      onOpenExportPanel();
     } else {
       // Navigate to the link for non-Reports cards
       window.open(toAbsoluteUrl(course.link), '_blank', 'noopener,noreferrer');
@@ -174,12 +155,11 @@ const CourseCard: React.FC<ICourseCardProps> = ({ course, iconName, toAbsoluteUr
       className={styles.card} 
       style={{ 
         backgroundColor: course.accent, 
-        cursor: isExporting ? 'wait' : 'pointer',
-        opacity: isExporting ? 0.7 : 1 
+        cursor: 'pointer'
       }}
       role="article"
       aria-label={`${course.title} - ${course.lessonsTotal} lessons`}
-      onClick={isExporting ? undefined : handleCardClick}
+      onClick={handleCardClick}
     >
       <div className={styles.cardIconContainer}>
         <Icon 
@@ -193,7 +173,7 @@ const CourseCard: React.FC<ICourseCardProps> = ({ course, iconName, toAbsoluteUr
 
       <div className={styles.meta}>
         <span style={{ color: 'inherit', textDecoration: 'underline' }}>
-          {isExporting ? 'Exporting...' : 'Access here'}
+          Access here
         </span>
       </div>
     </article>
