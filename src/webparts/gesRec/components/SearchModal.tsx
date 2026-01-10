@@ -358,7 +358,7 @@ export const SearchModal: React.FC<ISearchModalProps> = (props) => {
                       {item.Answer_x0020_Limit_x0020_date && (
                         <div style={{ fontSize: '12px', color: '#a19f9d', marginTop: '8px' }}>
                           <strong>Answer Limit:</strong>{' '}
-                          {new Date(item.Answer_x0020_Limit_x0020_date).toLocaleDateString()}
+                          {new Date(item.Answer_x0020_Limit_x0020_date).toLocaleDateString('en-GB')}
                         </div>
                       )}
                     </Stack>
