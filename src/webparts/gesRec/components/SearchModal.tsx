@@ -422,6 +422,23 @@ export const SearchModal: React.FC<ISearchModalProps> = (props) => {
                               {new Date(item.Modified).toLocaleDateString('en-GB')}
                             </div>
                           )}
+                          {item.FileRef && (
+                            <div style={{ marginTop: '12px' }}>
+                              <PrimaryButton
+                                text="Open Document"
+                                iconProps={{ iconName: 'OpenFile' }}
+                                onClick={() => {
+                                  const url = new URL(props.spfxContext.pageContext.site.absoluteUrl);
+                                  window.open(`${url.origin}${item.FileRef}`, '_blank');
+                                }}
+                                styles={{
+                                  root: {
+                                    height: '32px'
+                                  }
+                                }}
+                              />
+                            </div>
+                          )}
                         </>
                       ) : (
                         // List Item Result
