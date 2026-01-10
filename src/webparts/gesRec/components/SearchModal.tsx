@@ -118,7 +118,7 @@ export const SearchModal: React.FC<ISearchModalProps> = (props) => {
       } else {
         // For lists, use standard complaint fields
         targetColumns = ['Title', 'COMPLAINANT NAME', 'BORROWER NAME', 'STATUS_', 'AssignedToText', 'LOAN ID', 'NIF'];
-        displayFields = ['Title', 'Id', 'STATUS_', 'DESCRIPTION', 'Answer_x0020_Limit_x0020_date', 'Created'];
+        displayFields = ['Title', 'Id', 'STATUS_', 'DESCRIPTION', 'Answer_x0020_Limit_x0020_date', 'Created', 'NIF'];
       }
       
       const searchableFields: string[] = [];
@@ -137,9 +137,25 @@ export const SearchModal: React.FC<ISearchModalProps> = (props) => {
 
       // Build search filter
       const searchTerm = query.trim();
-      const filterParts = searchableFields.map(field => 
-        `substringof('${searchTerm}', ${field})`
-      );
+      let filterParts: string[] = [];
+      
+      // For lists, check if search term is numeric to search by ID
+      if (selectedListType === 'complaints' || selectedListType === 'complaintsArchive') {
+        if (!isNaN(Number(searchTerm))) {
+          // If it's a number, search by ID field
+          filterParts.push(`Id eq ${searchTerm}`);
+        }
+        // Add other field searches
+        filterParts = [...filterParts, ...searchableFields.map(field => 
+          `substringof('${searchTerm}', ${field})`
+        )];
+      } else {
+        // For document libraries, only use substringof
+        filterParts = searchableFields.map(field => 
+          `substringof('${searchTerm}', ${field})`
+        );
+      }
+      
       const filterQuery = `(${filterParts.join(' or ')})`;
 
       console.log('Search filter query:', filterQuery);
@@ -393,18 +409,6 @@ export const SearchModal: React.FC<ISearchModalProps> = (props) => {
                             <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#323130' }}>
                               {item.FileLeafRef || item.Title || 'Untitled'}
                             </h3>
-                            <span
-                              style={{
-                                padding: '4px 12px',
-                                backgroundColor: '#f3f2f1',
-                                borderRadius: '12px',
-                                fontSize: '12px',
-                                fontWeight: 600,
-                                color: '#605e5c'
-                              }}
-                            >
-                              ID: {item.Id}
-                            </span>
                           </div>
                           {item.File_x0020_Type && (
                             <div style={{ fontSize: '14px' }}>
@@ -476,6 +480,11 @@ export const SearchModal: React.FC<ISearchModalProps> = (props) => {
                             <div style={{ fontSize: '12px', color: '#a19f9d', marginTop: '8px' }}>
                               <strong>Answer Limit:</strong>{' '}
                               {new Date(item.Answer_x0020_Limit_x0020_date).toLocaleDateString('en-GB')}
+                            </div>
+                          )}
+                          {item.NIF && (
+                            <div style={{ fontSize: '14px', marginTop: '8px' }}>
+                              <strong>NIF:</strong> <span style={{ color: '#323130' }}>{item.NIF}</span>
                             </div>
                           )}
                         </>
