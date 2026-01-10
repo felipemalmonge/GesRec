@@ -172,7 +172,7 @@ const CourseCard: React.FC<ICourseCardProps> = ({ course, iconName, toAbsoluteUr
       <h3 className={styles.cardTitle}>{course.title}</h3>
 
       <div className={styles.meta}>
-        <span style={{ color: 'inherit', textDecoration: 'underline' }}>
+        <span style={{ color: 'inherit' }}>
           Access here
         </span>
       </div>

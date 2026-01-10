@@ -23,6 +23,53 @@ export interface ExportOptions {
  * Service for exporting SharePoint list data to Excel
  */
 export class ExcelExportService {
+  // Whitelist of columns to export (by display name)
+  private static readonly EXPORT_COLUMNS = [
+    'ID_val',
+    'Title',
+    'Assigned To',
+    'Answer Limit date',
+    'Answer Limit Date Extension',
+    'NIF',
+    'GROUNDED',
+    'Date of Complaint Reception',
+    'Area',
+    'Sub Type',
+    'PORTFOLIO',
+    'COMPLAINANT TYPE',
+    'BORROWER NAME',
+    'LOAN ID',
+    'COMPLAINANT NAME',
+    'SUBMISSION FORM',
+    'COMPLAINED ENTITY',
+    'PERFORMING TYPE',
+    'CLOSED DATE',
+    'STATUS',
+    'Closed by',
+    'LegalProcess',
+    'LegalProcessNumber',
+    'RAS',
+    'Debt Type',
+    'COMPLAINANT EMAIL',
+    'PROJECT NAME',
+    'SERVICING CUSTOMER',
+    'INVESTOR',
+    'DATE OF COMPLAINT INSTRUCTION',
+    'DESCRIPTION',
+    'Level1',
+    'Level2',
+    'Level3',
+    'ANSWER SUMMARY',
+    'Comments',
+    'PRIORITY',
+    'Severity',
+    'Company',
+    'NIF COMPLAINANT',
+    'Lawyer Name',
+    'Lawyer Email',
+    'External Reference Number'
+  ];
+
   /**
    * Export all data from a SharePoint list to Excel file
    */
@@ -50,15 +97,22 @@ export class ExcelExportService {
       
       console.log('All fields:', allFields);
       
-      // Filter out complex fields that require expansion (Person, Lookup, etc.)
-      const simpleFields = allFields.filter(f => 
-        f.TypeAsString !== 'User' && 
-        f.TypeAsString !== 'UserMulti' && 
-        f.TypeAsString !== 'Lookup' && 
-        f.TypeAsString !== 'LookupMulti'
-      );
+      // Create a map for quick field lookup
+      const fieldMap = new Map(allFields.map(f => [f.Title, f]));
       
-      console.log('Simple fields to export:', simpleFields.map(f => f.InternalName));
+      // Build export fields in the order specified in EXPORT_COLUMNS
+      const exportFields = this.EXPORT_COLUMNS
+        .map(columnName => fieldMap.get(columnName))
+        .filter(field => 
+          field && 
+          // Exclude complex fields
+          field.TypeAsString !== 'User' && 
+          field.TypeAsString !== 'UserMulti' && 
+          field.TypeAsString !== 'Lookup' && 
+          field.TypeAsString !== 'LookupMulti'
+        ) as Array<{ InternalName: string; Title: string; TypeAsString: string }>;
+      
+      console.log('Fields to export (in order):', exportFields.map(f => f.Title));
       
       // Build filter query
       const filterParts: string[] = [];
@@ -89,8 +143,8 @@ export class ExcelExportService {
       const filterQuery = filterParts.length > 0 ? filterParts.join(' and ') : '';
       console.log('Filter query:', filterQuery);
       
-      // Get all items with simple fields only
-      let query = list.items.top(5000).select(...simpleFields.map(f => f.InternalName));
+      // Get all items with export fields only
+      let query = list.items.top(5000).select(...exportFields.map(f => f.InternalName));
       
       if (filterQuery) {
         query = query.filter(filterQuery);
@@ -108,7 +162,7 @@ export class ExcelExportService {
       // Prepare data for Excel
       const exportData = items.map(item => {
         const row: any = {};
-        simpleFields.forEach(field => {
+        exportFields.forEach(field => {
           const value = item[field.InternalName];
           
           // Format dates nicely
@@ -133,7 +187,7 @@ export class ExcelExportService {
 
       // Auto-size columns
       const maxWidth = 50;
-      const columnWidths = simpleFields.map(field => ({
+      const columnWidths = exportFields.map(field => ({
         wch: Math.min(maxWidth, Math.max(field.Title.length, 10))
       }));
       worksheet['!cols'] = columnWidths;
