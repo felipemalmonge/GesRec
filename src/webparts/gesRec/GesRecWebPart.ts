@@ -19,6 +19,9 @@ export interface IGesRecWebPartProps {
   reportsUrl: string;
   searchUrl: string;
   complaintsListId: string;
+  complaintsDocumentsListId: string;
+  complaintsArchiveListId: string;
+  archiveDocumentsListId: string;
 }
 
 export default class GesRecWebPart extends BaseClientSideWebPart<IGesRecWebPartProps> {
@@ -40,7 +43,10 @@ export default class GesRecWebPart extends BaseClientSideWebPart<IGesRecWebPartP
         hasTeamsContext: !!this.context.sdks.microsoftTeams,
         userDisplayName: this.context.pageContext.user.displayName,
         spfxContext: this.context,
-        complaintsListId: this.properties.complaintsListId
+        complaintsListId: this.properties.complaintsListId,
+        complaintsDocumentsListId: this.properties.complaintsDocumentsListId,
+        complaintsArchiveListId: this.properties.complaintsArchiveListId,
+        archiveDocumentsListId: this.properties.archiveDocumentsListId
       }
     );
 
@@ -137,6 +143,18 @@ export default class GesRecWebPart extends BaseClientSideWebPart<IGesRecWebPartP
                 PropertyPaneTextField('complaintsListId', {
                   label: 'Complaints List ID',
                   description: 'Enter the GUID of the SharePoint COMPLAINTS list for Excel export'
+                }),
+                PropertyPaneTextField('complaintsDocumentsListId', {
+                  label: 'Complaints Documents List ID',
+                  description: 'Enter the GUID of the SharePoint COMPLAINTS DOCUMENTS list'
+                }),
+                PropertyPaneTextField('complaintsArchiveListId', {
+                  label: 'Complaints Archive List ID',
+                  description: 'Enter the GUID of the SharePoint COMPLAINTS ARCHIVE list'
+                }),
+                PropertyPaneTextField('archiveDocumentsListId', {
+                  label: 'Archive Documents List ID',
+                  description: 'Enter the GUID of the SharePoint ARCHIVE DOCUMENTS list'
                 })
               ]
             }

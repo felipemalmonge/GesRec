@@ -134,6 +134,9 @@ const GesRec: React.FC<IGesRecProps> = (props) => {
           onDismiss={() => setIsSearchModalOpen(false)}
           spfxContext={props.spfxContext}
           complaintsListId={props.complaintsListId}
+          complaintsDocumentsListId={props.complaintsDocumentsListId}
+          complaintsArchiveListId={props.complaintsArchiveListId}
+          archiveDocumentsListId={props.archiveDocumentsListId}
         />
       </section>
     </ErrorBoundary>

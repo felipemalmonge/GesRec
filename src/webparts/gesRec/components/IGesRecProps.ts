@@ -12,4 +12,7 @@ export interface IGesRecProps {
   userDisplayName: string;
   spfxContext: WebPartContext;
   complaintsListId?: string;
+  complaintsDocumentsListId?: string;
+  complaintsArchiveListId?: string;
+  archiveDocumentsListId?: string;
 }
