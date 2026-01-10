@@ -5,6 +5,7 @@ import type { IGesRecProps } from './IGesRecProps';
 import { useUrlUtils } from '../hooks/useUrlUtils';
 import { CourseService } from '../services/CourseService';
 import { ExportFilterPanel } from './ExportFilterPanel';
+import { SearchModal } from './SearchModal';
 import { ErrorBoundary } from './ErrorBoundary/ErrorBoundary';
 import { LoadingSpinner } from './LoadingSpinner/LoadingSpinner';
 import { ComponentState } from '../types';
@@ -21,6 +22,7 @@ const GesRec: React.FC<IGesRecProps> = (props) => {
     error: null
   });
   const [isExportPanelOpen, setIsExportPanelOpen] = React.useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = React.useState(false);
 
   // Memoize courses to prevent unnecessary re-renders
   const courses = React.useMemo(() => {
@@ -113,6 +115,7 @@ const GesRec: React.FC<IGesRecProps> = (props) => {
               iconName={iconMapping[course.title]}
               toAbsoluteUrl={toAbsoluteUrl}
               onOpenExportPanel={() => setIsExportPanelOpen(true)}
+              onOpenSearchModal={() => setIsSearchModalOpen(true)}
             />
           ))}
         </div>
@@ -121,6 +124,14 @@ const GesRec: React.FC<IGesRecProps> = (props) => {
         <ExportFilterPanel
           isOpen={isExportPanelOpen}
           onDismiss={() => setIsExportPanelOpen(false)}
+          spfxContext={props.spfxContext}
+          complaintsListId={props.complaintsListId}
+        />
+
+        {/* Search Modal */}
+        <SearchModal
+          isOpen={isSearchModalOpen}
+          onDismiss={() => setIsSearchModalOpen(false)}
           spfxContext={props.spfxContext}
           complaintsListId={props.complaintsListId}
         />
@@ -137,15 +148,19 @@ interface ICourseCardProps {
   iconName: string;
   toAbsoluteUrl: (url?: string) => string;
   onOpenExportPanel: () => void;
+  onOpenSearchModal: () => void;
 }
 
-const CourseCard: React.FC<ICourseCardProps> = ({ course, iconName, toAbsoluteUrl, onOpenExportPanel }) => {
+const CourseCard: React.FC<ICourseCardProps> = ({ course, iconName, toAbsoluteUrl, onOpenExportPanel, onOpenSearchModal }) => {
   const handleCardClick = () => {
     if (course.title === 'Reports') {
       // Open the export filter panel
       onOpenExportPanel();
+    } else if (course.title === 'Search') {
+      // Open the search modal
+      onOpenSearchModal();
     } else {
-      // Navigate to the link for non-Reports cards
+      // Navigate to the link for non-Reports/Search cards
       window.open(toAbsoluteUrl(course.link), '_blank', 'noopener,noreferrer');
     }
   };
