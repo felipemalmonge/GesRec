@@ -38,9 +38,9 @@
 }
 
 .statIcon {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
+  font-size: 32px;
+  line-height: 1;
+  color: #003146;
   transition: all 0.3s ease;
 }
 
@@ -126,8 +126,7 @@
   }
   
   .statIcon {
-    width: 36px;
-    height: 36px;
+    font-size: 30px;
   }
   
   .statNumber {
@@ -151,8 +150,7 @@
   }
   
   .statIcon {
-    width: 32px;
-    height: 32px;
+    font-size: 28px;
   }
   
   .statNumber {
@@ -180,8 +178,7 @@
   }
   
   .statIcon {
-    width: 28px;
-    height: 28px;
+    font-size: 24px;
   }
   
   .statNumber {
@@ -209,8 +206,7 @@
   }
   
   .statIcon {
-    width: 24px;
-    height: 24px;
+    font-size: 22px;
   }
   
   .statNumber {

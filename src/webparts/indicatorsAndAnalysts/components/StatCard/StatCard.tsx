@@ -1,6 +1,13 @@
 import * as React from 'react';
+import { Icon } from '@fluentui/react';
 import styles from './StatCard.module.scss';
 import { IndicatorData } from '../../types';
+
+const iconNameByIndicator: Record<string, string> = {
+  complaints: 'Warning',
+  'answer-limit': 'Calendar',
+  clarifications: 'TextDocument'
+};
 
 interface StatCardProps {
   indicator: IndicatorData;
@@ -20,6 +27,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   className = '' 
 }) => {
   const cardClass = `${styles.statCard} ${className}`;
+  const iconName = iconNameByIndicator[indicator.id] || 'Info';
 
   return (
     <div className={cardClass}>
@@ -27,11 +35,7 @@ export const StatCard: React.FC<StatCardProps> = ({
       {showIcon && (
         <div className={styles.iconRow}>
           <div className={styles.iconContainer}>
-            <img 
-              src={require(`../../assets/${indicator.icon}`)} 
-              alt={indicator.title}
-              className={styles.statIcon}
-            />
+            <Icon iconName={iconName} className={styles.statIcon} />
           </div>
         </div>
       )}
