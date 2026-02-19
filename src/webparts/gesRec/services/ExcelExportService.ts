@@ -28,11 +28,11 @@ export class ExcelExportService {
     'ID_val',
     'Title',
     'Assigned To',
+    'Date of Complaint Reception',
     'Answer Limit date',
     'Answer Limit Date Extension',
     'NIF',
     'GROUNDED',
-    'Date of Complaint Reception',
     'Area',
     'Sub Type',
     'PORTFOLIO',
@@ -45,7 +45,6 @@ export class ExcelExportService {
     'PERFORMING TYPE',
     'CLOSED DATE',
     'STATUS',
-    'Closed by',
     'LegalProcess',
     'LegalProcessNumber',
     'RAS',
@@ -54,7 +53,6 @@ export class ExcelExportService {
     'PROJECT NAME',
     'SERVICING CUSTOMER',
     'INVESTOR',
-    'DATE OF COMPLAINT INSTRUCTION',
     'DESCRIPTION',
     'Level1',
     'Level2',
@@ -69,6 +67,34 @@ export class ExcelExportService {
     'Lawyer Email',
     'External Reference Number'
   ];
+
+  private static readonly COLUMN_ALIASES: Record<string, string[]> = {
+    'Assigned To': ['Assigned To', 'AssignedTo']
+  };
+
+  private static readonly DATE_ONLY_COLUMNS = new Set([
+    'Date of Complaint Reception',
+    'Answer Limit date',
+    'Answer Limit Date Extension',
+    'CLOSED DATE'
+  ]);
+
+  private static formatDateDDMMYYYY(value: any): string {
+    if (!value) {
+      return '';
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
+  }
 
   /**
    * Export all data from a SharePoint list to Excel file
@@ -97,22 +123,50 @@ export class ExcelExportService {
       
       console.log('All fields:', allFields);
       
-      // Create a map for quick field lookup
-      const fieldMap = new Map(allFields.map(f => [f.Title, f]));
+      // Create maps for quick field lookup by title or internal name
+      const fieldByTitle = new Map(allFields.map(f => [f.Title.toLowerCase(), f]));
+      const fieldByInternal = new Map(allFields.map(f => [f.InternalName.toLowerCase(), f]));
+
+      const resolveField = (columnName: string) => {
+        const aliases = this.COLUMN_ALIASES[columnName] || [columnName];
+
+        for (const alias of aliases) {
+          const normalized = alias.toLowerCase();
+          const byTitle = fieldByTitle.get(normalized);
+          if (byTitle) {
+            return byTitle;
+          }
+
+          const byInternal = fieldByInternal.get(normalized);
+          if (byInternal) {
+            return byInternal;
+          }
+        }
+
+        return undefined;
+      };
       
       // Build export fields in the order specified in EXPORT_COLUMNS
       const exportFields = this.EXPORT_COLUMNS
-        .map(columnName => fieldMap.get(columnName))
+        .map(columnName => {
+          const field = resolveField(columnName);
+          if (!field) {
+            return undefined;
+          }
+
+          return {
+            ...field,
+            ExportTitle: columnName
+          };
+        })
         .filter(field => 
           field && 
           // Exclude complex fields
-          field.TypeAsString !== 'User' && 
-          field.TypeAsString !== 'UserMulti' && 
           field.TypeAsString !== 'Lookup' && 
           field.TypeAsString !== 'LookupMulti'
-        ) as Array<{ InternalName: string; Title: string; TypeAsString: string }>;
+        ) as Array<{ InternalName: string; Title: string; TypeAsString: string; ExportTitle: string }>;
       
-      console.log('Fields to export (in order):', exportFields.map(f => f.Title));
+      console.log('Fields to export (in order):', exportFields.map(f => f.ExportTitle));
       
       // Build filter query
       const filterParts: string[] = [];
@@ -142,9 +196,26 @@ export class ExcelExportService {
       
       const filterQuery = filterParts.length > 0 ? filterParts.join(' and ') : '';
       console.log('Filter query:', filterQuery);
+
+      // Build select and expand for Person/Group fields
+      const selectFields = exportFields.reduce((acc: string[], field) => {
+        acc.push(field.InternalName);
+        if (field.TypeAsString === 'User' || field.TypeAsString === 'UserMulti') {
+          acc.push(`${field.InternalName}/Title`);
+        }
+        return acc;
+      }, []);
+
+      const expandFields = exportFields
+        .filter(field => field.TypeAsString === 'User' || field.TypeAsString === 'UserMulti')
+        .map(field => field.InternalName);
       
       // Get all items with export fields only
-      let query = list.items.top(5000).select(...exportFields.map(f => f.InternalName));
+      let query = list.items.top(5000).select(...selectFields).orderBy('ID', false);
+
+      if (expandFields.length > 0) {
+        query = query.expand(...expandFields);
+      }
       
       if (filterQuery) {
         query = query.filter(filterQuery);
@@ -164,17 +235,33 @@ export class ExcelExportService {
         const row: any = {};
         exportFields.forEach(field => {
           const value = item[field.InternalName];
+
+          // Format person/group fields as display names
+          if (field.TypeAsString === 'User' && value) {
+            row[field.ExportTitle] = value.Title || '';
+            return;
+          }
+
+          if (field.TypeAsString === 'UserMulti' && Array.isArray(value)) {
+            row[field.ExportTitle] = value.map((user: any) => user?.Title).filter(Boolean).join('; ');
+            return;
+          }
+
+          if (this.DATE_ONLY_COLUMNS.has(field.ExportTitle) && value) {
+            row[field.ExportTitle] = this.formatDateDDMMYYYY(value);
+            return;
+          }
           
           // Format dates nicely
           if (field.TypeAsString === 'DateTime' && value) {
             try {
               const date = new Date(value);
-              row[field.Title] = date.toLocaleString();
+              row[field.ExportTitle] = date.toLocaleString();
             } catch {
-              row[field.Title] = value;
+              row[field.ExportTitle] = value;
             }
           } else {
-            row[field.Title] = value || '';
+            row[field.ExportTitle] = value || '';
           }
         });
         return row;
@@ -188,7 +275,7 @@ export class ExcelExportService {
       // Auto-size columns
       const maxWidth = 50;
       const columnWidths = exportFields.map(field => ({
-        wch: Math.min(maxWidth, Math.max(field.Title.length, 10))
+        wch: Math.min(maxWidth, Math.max(field.ExportTitle.length, 10))
       }));
       worksheet['!cols'] = columnWidths;
 
