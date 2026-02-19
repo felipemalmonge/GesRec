@@ -20,6 +20,7 @@ import '@pnp/sp/webs';
 import '@pnp/sp/lists';
 import '@pnp/sp/items';
 import '@pnp/sp/fields';
+import '@pnp/sp/search';
 
 export interface ISearchModalProps {
   isOpen: boolean;
@@ -74,6 +75,52 @@ export const SearchModal: React.FC<ISearchModalProps> = (props) => {
     }
   };
 
+  const performDocumentLibrarySearch = async (
+    sp: SPFI,
+    listId: string,
+    query: string,
+    page: number
+  ): Promise<{ items: ComplaintItem[]; total: number; hasMore: boolean }> => {
+    const startRow = (page - 1) * ITEMS_PER_PAGE;
+    const escapedQuery = query.trim().replace(/"/g, '\\"');
+
+    const searchResults: any = await sp.search({
+      Querytext: `${escapedQuery} AND IsDocument:1 AND ListId:${listId}`,
+      RowLimit: ITEMS_PER_PAGE,
+      StartRow: startRow,
+      TrimDuplicates: false,
+      SelectProperties: [
+        'Title',
+        'Path',
+        'FileType',
+        'Created',
+        'LastModifiedTime',
+        'ListItemID',
+        'Filename'
+      ],
+      SortList: [{ Property: 'ListItemID', Direction: 1 }]
+    });
+
+    const rows: any[] = searchResults?.PrimarySearchResults || [];
+    const totalRows: number = searchResults?.RawSearchResults?.RelevantResults?.TotalRows || rows.length;
+
+    const mappedItems: ComplaintItem[] = rows.map((row: any) => ({
+      Id: Number(row.ListItemID) || 0,
+      Title: row.Title || row.Filename || 'Untitled',
+      FileLeafRef: row.Filename || row.Title || 'Untitled',
+      FileRef: row.Path || '',
+      File_x0020_Type: row.FileType || '',
+      Modified: row.LastModifiedTime,
+      Created: row.Created
+    }));
+
+    return {
+      items: mappedItems,
+      total: totalRows,
+      hasMore: startRow + mappedItems.length < totalRows
+    };
+  };
+
   const performSearch = async (query: string, page: number = 1): Promise<void> => {
     if (!query || query.trim().length === 0) {
       setSearchResults([]);
@@ -96,6 +143,16 @@ export const SearchModal: React.FC<ISearchModalProps> = (props) => {
     try {
       const sp: SPFI = spfi().using(SPFx(props.spfxContext));
       const list = sp.web.lists.getById(currentListId);
+
+      if (selectedListType === 'complaintsDocuments' || selectedListType === 'archiveDocuments') {
+        const documentResults = await performDocumentLibrarySearch(sp, currentListId, query, page);
+
+        setSearchResults(documentResults.items);
+        setTotalResults(documentResults.total);
+        setHasMoreResults(documentResults.hasMore);
+        setCurrentPage(page);
+        return;
+      }
 
       // Get all fields to find internal names for our target columns
       const allFields = await list.fields
@@ -433,7 +490,10 @@ export const SearchModal: React.FC<ISearchModalProps> = (props) => {
                                 iconProps={{ iconName: 'OpenFile' }}
                                 onClick={() => {
                                   const url = new URL(props.spfxContext.pageContext.site.absoluteUrl);
-                                  window.open(`${url.origin}${item.FileRef}`, '_blank');
+                                  const documentUrl = item.FileRef && item.FileRef.startsWith('http')
+                                    ? item.FileRef
+                                    : `${url.origin}${item.FileRef}`;
+                                  window.open(documentUrl, '_blank');
                                 }}
                                 styles={{
                                   root: {
