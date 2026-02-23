@@ -32,9 +32,11 @@ export class ExcelExportService {
     'Answer Limit date',
     'Answer Limit Date Extension',
     'NIF',
+    'Sub Type',
+    'STATUS',
+    'CLOSED DATE',
     'GROUNDED',
     'Area',
-    'Sub Type',
     'PORTFOLIO',
     'COMPLAINANT TYPE',
     'BORROWER NAME',
@@ -43,8 +45,6 @@ export class ExcelExportService {
     'SUBMISSION FORM',
     'COMPLAINED ENTITY',
     'PERFORMING TYPE',
-    'CLOSED DATE',
-    'STATUS',
     'LegalProcess',
     'LegalProcessNumber',
     'RAS',
@@ -79,26 +79,21 @@ export class ExcelExportService {
     'CLOSED DATE'
   ]);
 
-  private static formatDateDDMMYYYY(value: any): string {
+  private static parseDateValue(value: any): Date | null {
     if (!value) {
-      return '';
+      return null;
     }
 
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
-      return value;
+      return null;
     }
 
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-
-    return `${day}/${month}/${year}`;
+    return date;
   }
 
-  /**
-   * Export all data from a SharePoint list to Excel file
-   */
+  // Export all data from a SharePoint list to Excel file
+   
   public static async exportListToExcel(options: ExportOptions): Promise<void> {
     const { listId, spfxContext, fileName = 'Complaints_Export', filters } = options;
 
@@ -107,23 +102,19 @@ export class ExcelExportService {
     }
 
     try {
-      // Initialize PnP with SPFx context
       const sp: SPFI = spfi().using(SPFx(spfxContext));
       
-      // Fetch all items from the list
       console.log('Fetching data from SharePoint list:', listId);
       console.log('Filters:', filters);
       
       const list = sp.web.lists.getById(listId);
       
-      // Get list fields to determine what to export
       const allFields = await list.fields
         .filter("Hidden eq false and ReadOnlyField eq false")
         .select("InternalName", "Title", "TypeAsString")();
       
       console.log('All fields:', allFields);
       
-      // Create maps for quick field lookup by title or internal name
       const fieldByTitle = new Map(allFields.map(f => [f.Title.toLowerCase(), f]));
       const fieldByInternal = new Map(allFields.map(f => [f.InternalName.toLowerCase(), f]));
 
@@ -161,32 +152,27 @@ export class ExcelExportService {
         })
         .filter(field => 
           field && 
-          // Exclude complex fields
           field.TypeAsString !== 'Lookup' && 
           field.TypeAsString !== 'LookupMulti'
         ) as Array<{ InternalName: string; Title: string; TypeAsString: string; ExportTitle: string }>;
       
       console.log('Fields to export (in order):', exportFields.map(f => f.ExportTitle));
       
-      // Build filter query
       const filterParts: string[] = [];
       
-      // Add status filter if provided
       if (filters?.statuses && filters.statuses.length > 0) {
         const statusFilters = filters.statuses.map(status => 
           `STATUS_ eq '${status}'`
         ).join(' or ');
         filterParts.push(`(${statusFilters})`);
       }
-      
-      // Add date range filter if provided
+
       if (filters?.startDate || filters?.endDate) {
         if (filters.startDate) {
           const startDateISO = filters.startDate.toISOString();
           filterParts.push(`Answer_x0020_Limit_x0020_date ge datetime'${startDateISO}'`);
         }
         if (filters.endDate) {
-          // Set end date to end of day
           const endDate = new Date(filters.endDate);
           endDate.setHours(23, 59, 59, 999);
           const endDateISO = endDate.toISOString();
@@ -197,7 +183,6 @@ export class ExcelExportService {
       const filterQuery = filterParts.length > 0 ? filterParts.join(' and ') : '';
       console.log('Filter query:', filterQuery);
 
-      // Build select and expand for Person/Group fields
       const selectFields = exportFields.reduce((acc: string[], field) => {
         acc.push(field.InternalName);
         if (field.TypeAsString === 'User' || field.TypeAsString === 'UserMulti') {
@@ -210,7 +195,6 @@ export class ExcelExportService {
         .filter(field => field.TypeAsString === 'User' || field.TypeAsString === 'UserMulti')
         .map(field => field.InternalName);
       
-      // Get all items with export fields only
       let query = list.items.top(5000).select(...selectFields).orderBy('ID', false);
 
       if (expandFields.length > 0) {
@@ -236,7 +220,6 @@ export class ExcelExportService {
         exportFields.forEach(field => {
           const value = item[field.InternalName];
 
-          // Format person/group fields as display names
           if (field.TypeAsString === 'User' && value) {
             row[field.ExportTitle] = value.Title || '';
             return;
@@ -248,11 +231,11 @@ export class ExcelExportService {
           }
 
           if (this.DATE_ONLY_COLUMNS.has(field.ExportTitle) && value) {
-            row[field.ExportTitle] = this.formatDateDDMMYYYY(value);
+            const dateValue = this.parseDateValue(value);
+            row[field.ExportTitle] = dateValue || value;
             return;
           }
           
-          // Format dates nicely
           if (field.TypeAsString === 'DateTime' && value) {
             try {
               const date = new Date(value);
@@ -268,20 +251,42 @@ export class ExcelExportService {
       });
 
       // Create workbook and worksheet
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const worksheet = XLSX.utils.json_to_sheet(exportData, { cellDates: true });
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Complaints');
 
-      // Auto-size columns
+      // Force date format for configured date-only columns so Excel sorts as dates
+      const dateColumnIndexes = exportFields
+        .map((field, index) => this.DATE_ONLY_COLUMNS.has(field.ExportTitle) ? index : -1)
+        .filter(index => index >= 0);
+
+      for (let rowIndex = 1; rowIndex <= exportData.length; rowIndex++) {
+        dateColumnIndexes.forEach(colIndex => {
+          const cellAddress = XLSX.utils.encode_cell({ r: rowIndex, c: colIndex });
+          const cell = worksheet[cellAddress];
+          if (cell && (cell.t === 'd' || cell.t === 'n')) {
+            cell.z = 'dd/mm/yyyy';
+          }
+        });
+      }
+
       const maxWidth = 50;
       const columnWidths = exportFields.map(field => ({
         wch: Math.min(maxWidth, Math.max(field.ExportTitle.length, 10))
       }));
       worksheet['!cols'] = columnWidths;
 
-      // Generate Excel file and trigger download
-      const timestamp = new Date().toISOString().split('T')[0];
-      const fullFileName = `${fileName}_${timestamp}.xlsx`;
+      // Enable filter dropdowns on the header row when opening Excel
+      const endCol = XLSX.utils.encode_col(Math.max(exportFields.length - 1, 0));
+      const endRow = exportData.length + 1; // +1 because header is row 1
+      worksheet['!autofilter'] = { ref: `A1:${endCol}${endRow}` };
+
+      const now = new Date();
+      const datePart = now.toISOString().split('T')[0];
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      const fullFileName = `${fileName}_${datePart}_${hh}${mm}${ss}.xlsx`;
       
       XLSX.writeFile(workbook, fullFileName);
       
@@ -292,9 +297,8 @@ export class ExcelExportService {
     }
   }
 
-  /**
-   * Validate export configuration
-   */
+  //Validate export configuration
+
   public static validateExportConfig(options: Partial<ExportOptions>): { isValid: boolean; error?: string } {
     if (!options.listId) {
       return { isValid: false, error: 'List ID is not configured. Please configure the web part properties.' };

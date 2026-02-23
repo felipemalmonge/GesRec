@@ -76,7 +76,7 @@ export const ExportFilterPanel: React.FC<IExportFilterPanelProps> = (props) => {
         filters: filterOptions
       });
 
-      alert('Excel file downloaded successfully!');
+      //alert('Excel file downloaded successfully!');
       props.onDismiss();
     } catch (error) {
       console.error('Export error:', error);
