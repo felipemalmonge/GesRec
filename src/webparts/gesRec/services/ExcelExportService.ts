@@ -34,8 +34,8 @@ export class ExcelExportService {
     'Sub Type',
     'STATUS',
     'CLOSED DATE',
-     'NIF',
-    'GROUNDED',
+    'NIF',
+    'GROUNDED?',
     'Area',
     'PORTFOLIO',
     'COMPLAINANT TYPE',
@@ -79,17 +79,22 @@ export class ExcelExportService {
     'CLOSED DATE'
   ]);
 
-  private static parseDateValue(value: any): Date | null {
-    if (!value) {
-      return null;
-    }
+  private static dateToExcelSerial(value: any): number | null {
+    if (!value) return null;
 
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return null;
-    }
+    const parsed = value instanceof Date ? value : new Date(String(value));
+    if (isNaN(parsed.getTime())) return null;
 
-    return date;
+    const y  = parsed.getFullYear();
+    const mo = parsed.getMonth();
+    const d  = parsed.getDate();
+
+    const MS_PER_DAY   = 24 * 60 * 60 * 1000;
+    const utcDate      = Date.UTC(y, mo, d);
+    const utcExcelBase = Date.UTC(1899, 11, 31); // Dec 31, 1899 = Excel day 0
+    const days         = Math.round((utcDate - utcExcelBase) / MS_PER_DAY);
+
+    return days >= 60 ? days + 1 : days;
   }
 
   // Export all data from a SharePoint list to Excel file
@@ -231,8 +236,8 @@ export class ExcelExportService {
           }
 
           if (this.DATE_ONLY_COLUMNS.has(field.ExportTitle) && value) {
-            const dateValue = this.parseDateValue(value);
-            row[field.ExportTitle] = dateValue || value;
+            const serial = this.dateToExcelSerial(value);
+            row[field.ExportTitle] = serial !== null ? serial : value;
             return;
           }
           
