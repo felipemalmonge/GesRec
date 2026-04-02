@@ -79,6 +79,58 @@ export class ExcelExportService {
     'CLOSED DATE'
   ]);
 
+  // Remove XML-invalid control chars that can corrupt generated .xlsx files.
+  private static sanitizeCellValue(value: any): any {
+    if (typeof value === 'string') {
+      // Keep tab, LF and CR; strip other control chars 0x00-0x1F and 0x7F.
+      return value.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+    }
+    return value;
+  }
+
+  private static sanitizeFileName(fileName: string): string {
+    const sanitized = fileName
+      .replace(/[<>:"/\\|?*]/g, '_')
+      .replace(/\s+/g, '_')
+      .trim();
+
+    return sanitized || 'Complaints_Export';
+  }
+
+  private static downloadWorkbook(workbook: XLSX.WorkBook, fullFileName: string): void {
+    try {
+      const arrayBuffer = XLSX.write(workbook, {
+        bookType: 'xlsx',
+        type: 'array',
+        compression: true
+      });
+
+      const blob = new Blob([arrayBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+
+      // IE / legacy Edge fallback
+      const nav = window.navigator as Navigator & { msSaveOrOpenBlob?: (blob: Blob, defaultName?: string) => boolean };
+      if (typeof nav.msSaveOrOpenBlob === 'function') {
+        nav.msSaveOrOpenBlob(blob, fullFileName);
+        return;
+      }
+
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = fullFileName;
+      anchor.style.display = 'none';
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(url);
+    } catch {
+      // Final fallback to xlsx native helper.
+      XLSX.writeFile(workbook, fullFileName);
+    }
+  }
+
   private static dateToExcelSerial(value: any): number | null {
     if (!value) return null;
 
@@ -226,12 +278,12 @@ export class ExcelExportService {
           const value = item[field.InternalName];
 
           if (field.TypeAsString === 'User' && value) {
-            row[field.ExportTitle] = value.Title || '';
+            row[field.ExportTitle] = this.sanitizeCellValue(value.Title || '');
             return;
           }
 
           if (field.TypeAsString === 'UserMulti' && Array.isArray(value)) {
-            row[field.ExportTitle] = value.map((user: any) => user?.Title).filter(Boolean).join('; ');
+            row[field.ExportTitle] = this.sanitizeCellValue(value.map((user: any) => user?.Title).filter(Boolean).join('; '));
             return;
           }
 
@@ -244,12 +296,12 @@ export class ExcelExportService {
           if (field.TypeAsString === 'DateTime' && value) {
             try {
               const date = new Date(value);
-              row[field.ExportTitle] = date.toLocaleString();
+              row[field.ExportTitle] = this.sanitizeCellValue(date.toLocaleString());
             } catch {
-              row[field.ExportTitle] = value;
+              row[field.ExportTitle] = this.sanitizeCellValue(value);
             }
           } else {
-            row[field.ExportTitle] = value || '';
+            row[field.ExportTitle] = this.sanitizeCellValue(value || '');
           }
         });
         return row;
@@ -291,9 +343,10 @@ export class ExcelExportService {
       const hh = String(now.getHours()).padStart(2, '0');
       const mm = String(now.getMinutes()).padStart(2, '0');
       const ss = String(now.getSeconds()).padStart(2, '0');
-      const fullFileName = `${fileName}_${datePart}_${hh}${mm}${ss}.xlsx`;
+      const safeFileName = this.sanitizeFileName(fileName);
+      const fullFileName = `${safeFileName}_${datePart}_${hh}${mm}${ss}.xlsx`;
       
-      XLSX.writeFile(workbook, fullFileName);
+      this.downloadWorkbook(workbook, fullFileName);
       
       console.log('Excel file downloaded successfully:', fullFileName);
     } catch (error) {
