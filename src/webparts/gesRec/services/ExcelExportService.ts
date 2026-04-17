@@ -47,7 +47,7 @@ export class ExcelExportService {
     'PERFORMING TYPE',
     'LegalProcess',
     'LegalProcessNumber',
-    'RAS',
+    'RAS_',
     'Debt Type',
     'COMPLAINANT EMAIL',
     'PROJECT NAME',
