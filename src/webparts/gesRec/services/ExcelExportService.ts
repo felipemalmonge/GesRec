@@ -65,7 +65,8 @@ export class ExcelExportService {
     'NIF COMPLAINANT',
     'Lawyer Name',
     'Lawyer Email',
-    'External Reference Number'
+    'External Reference Number',
+     'Created By'
   ];
 
   private static readonly COLUMN_ALIASES: Record<string, string[]> = {
@@ -167,7 +168,7 @@ export class ExcelExportService {
       const list = sp.web.lists.getById(listId);
       
       const allFields = await list.fields
-        .filter("Hidden eq false and ReadOnlyField eq false")
+        .filter("Hidden eq false and (ReadOnlyField eq false or InternalName eq 'Author')")
         .select("InternalName", "Title", "TypeAsString")();
       
       console.log('All fields:', allFields);
